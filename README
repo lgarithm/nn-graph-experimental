@@ -3,3 +3,5 @@ Neural Network Graph
 stdnn-graph is an experimental library for computation graph build on top of stdtensor(<https://github.com/lgarithm/stdtensor>) and stdnn-ops(<https://github.com/lgarithm/stdnn-ops>).
 
 Will be open-sourced before 2019.07.26.
+
+Preview branch is now available.
