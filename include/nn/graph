@@ -1,0 +1,13 @@
+#pragma once
+#include <nn/bits/graph/builder.hpp>
+#include <nn/bits/graph/optimizer.hpp>
+#include <nn/bits/graph/runtime.hpp>
+
+namespace nn::graph
+{
+using internal::builder;
+using internal::node;
+using internal::runtime;
+using var_node = internal::base_var_node;
+using internal::optimizer;
+}  // namespace nn::graph

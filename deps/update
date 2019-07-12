@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+cd $(dirname $0)
+
+get_commit() {
+    git ls-remote $1 -t $2 | awk '{print $1}'
+}
+
+get_commit https://github.com/lgarithm/stdtensor master >stdtensor
+get_commit https://github.com/lgarithm/stdnn-ops master >stdnn-ops
