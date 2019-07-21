@@ -39,9 +39,7 @@ int main(int argc, char *argv[])
     }
 
     {
-        const auto l = images.shape().dims()[0];
-        const auto r = range(l);
-        std::cerr << "l = " << l << std::endl;
+        const auto r = range<0>(images);
         for (const auto [idx, images, labels] : zip(r, images, labels)) {
             std::cerr << idx << std::endl;
             std::cerr << ttl::tensor_type_name(images) << std::endl;

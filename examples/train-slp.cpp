@@ -55,10 +55,10 @@ void slp_example(int batch_size, int epoches)
     const auto label_batches = ttl::chunk(labels, batch_size);
     std::cerr << "batch size :: " << batch_size << std::endl;
     using std::experimental::zip;
-    for (auto epoch : nn::range(epoches)) {
+    using ttl::range;
+    for (auto epoch : range(epoches)) {
         TRACE_SCOPE("train epoch");
-        for (const auto idx :
-             nn::range(std::get<0>(image_batches.shape().dims()))) {
+        for (const auto idx : range<0>(image_batches)) {
             {
                 TRACE_SCOPE("train");
                 rt.bind(xs, image_batches[idx]);
