@@ -1,5 +1,7 @@
 #pragma once
 #include <optional>
+
+#include <ttl/cuda_tensor>
 #include <ttl/tensor>
 
 namespace nn::graph::internal
