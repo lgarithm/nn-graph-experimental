@@ -1,5 +1,6 @@
 #pragma once
 #include <nn/ops>
+#include <ttl/range>
 #include <ttl/tensor>
 
 #include "trace.hpp"
@@ -44,7 +45,7 @@ float test_all_clang(const nn::graph::builder &b, nn::graph::runtime &rt,
     const auto n = std::get<0>(image_batches.shape().dims());
     ttl::tensor<float, 1> accs(n);
     for (const auto [i, images, labels] :
-         zip(nn::range(n), image_batches, label_bathces)) {
+         zip(ttl::range(n), image_batches, label_bathces)) {
         LOG_SCOPE("train batch");
         std::cerr << "test batch " << i + 1 << "/" << n << std::endl;
         rt.bind(xs, images);
@@ -66,7 +67,7 @@ float test_all_gcc(const nn::graph::builder &b, nn::graph::runtime &rt,
     const auto label_bathces = chunk(labels, batch_size);
     const auto n = std::get<0>(image_batches.shape().dims());
     ttl::tensor<float, 1> accs(n);
-    for (const auto i : nn::range(n)) {
+    for (const auto i : ttl::range(n)) {
         // LOG_SCOPE("test batch");
         // std::cerr << "test batch " << i + 1 << "/" << n << std::endl;
         rt.bind(xs, image_batches[i]);
