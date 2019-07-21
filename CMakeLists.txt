@@ -1,11 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 PROJECT(libnn-graph)
 
-ADD_DEFINITIONS(-Wall)
-IF(APPLE)
-    ADD_DEFINITIONS(-Werror)
+OPTION(USE_STRICT "Enable strict build options." OFF)
+IF(USE_STRICT)
+    ADD_DEFINITIONS(-Wall)
+    IF(APPLE)
+        ADD_DEFINITIONS(-Werror)
+    ENDIF()
+    ADD_DEFINITIONS(-Wfatal-errors)
 ENDIF()
-ADD_DEFINITIONS(-Wfatal-errors)
 
 SET(CMAKE_CXX_STANDARD 17)
 
@@ -47,6 +50,7 @@ IF(USE_OPENBLAS)
 ENDIF()
 
 OPTION(BUILD_EXAMPLES "Build examples." OFF)
+OPTION(BUILD_GPU_EXAMPLES "Build gpu examples." OFF)
 
 IF(BUILD_EXAMPLES)
     FIND_PACKAGE(stdtracer REQUIRED)
@@ -81,6 +85,13 @@ IF(BUILD_EXAMPLES)
     SIMPLE_EXAMPLE(train-slp)
     SIMPLE_EXAMPLE(train-cnn)
     SIMPLE_EXAMPLE(mnist-dataset)
+
+    IF(BUILD_GPU_EXAMPLES)
+        ENABLE_LANGUAGE(CUDA)
+        ADD_LIBRARY(cu-ops ${CMAKE_SOURCE_DIR}/src/nn/ops/example_gpu_ops.cu)
+        SIMPLE_EXAMPLE(gpu-example)
+        TARGET_LINK_LIBRARIES(gpu-example cu-ops)
+    ENDIF()
 ENDIF()
 
 OPTION(BUILD_TESTS "Build tests." ON)

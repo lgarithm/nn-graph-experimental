@@ -21,7 +21,7 @@ template <typename Op, typename... Rs> struct infer {
     using type = typename std::tuple_element<0, std::tuple<Rs...>>::type;
 };
 
-class builder
+class base_builder
 {
   protected:
     std::vector<std::unique_ptr<node>> nodes_;
@@ -68,6 +68,8 @@ class builder
     }
 
   public:
+    ~base_builder() = default;
+
     //   alias for ttl::make_shape
     template <typename... D>
     ttl::shape<sizeof...(D)> shape(const D &... d) const
@@ -207,7 +209,11 @@ class builder
             std::cerr << "  " << y->name() << " <- " << f->name() << std::endl;
         }
     }
+};
 
+class builder : public base_builder
+{
+  public:
     void build(runtime &rt) const
     {
         for (const auto v : covars_) { v->create(rt); }
