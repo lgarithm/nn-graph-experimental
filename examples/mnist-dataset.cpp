@@ -5,6 +5,7 @@
 #include <nn/bits/ops/chunk.hpp>
 #include <nn/experimental/datasets>
 #include <ttl/debug>
+#include <ttl/range>
 
 int main(int argc, char *argv[])
 {
@@ -24,9 +25,9 @@ int main(int argc, char *argv[])
     const int N = 5000;
     const auto images = chunk(train.images, N);
     const auto labels = chunk(train.labels, N);
-    using std::experimental::range;
     using std::experimental::zip;
     using ttl::chunk;
+    using ttl::range;
 
     {
         int idx = 0;
