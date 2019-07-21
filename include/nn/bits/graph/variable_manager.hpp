@@ -1,35 +1,40 @@
 #pragma once
+#include <memory>
 #include <optional>
+#include <vector>
 
-#include <ttl/cuda_tensor>
-#include <ttl/tensor>
+#include <ttl/shape>
 
 namespace nn::graph::internal
 {
-template <typename R, ttl::rank_t r> class tensor_variable;
+template <typename R, ttl::rank_t r, typename D> class tensor_variable;
+template <typename R, ttl::rank_t r, typename D> class tensor_reference;
 
 class variable
 {
   public:
     virtual ~variable() {}
 
-    template <typename R, ttl::rank_t r> tensor_variable<R, r> &as()
+    template <typename R, ttl::rank_t r, typename D>
+    tensor_variable<R, r, D> &as()
     {
-        return *down_cast<tensor_variable<R, r>>(this);
+        return *down_cast<tensor_variable<R, r, D>>(this);
     }
 };
 
-template <typename R, ttl::rank_t r> class tensor_variable : public variable
+template <typename R, ttl::rank_t r, typename D>
+class tensor_variable : public variable
 {
-    ttl::tensor<R, r> value_;
+    using T = typename D::template tensor_type<R, r>;
+    using Ref = typename D::template reference_type<R, r>;
+
+    T value_;
 
   public:
     tensor_variable(const ttl::shape<r> &shape) : value_(shape) {}
 
-    ttl::tensor_ref<R, r> get() const { return ref(value_); }
+    Ref get() const { return Ref(value_); }
 };
-
-template <typename R, ttl::rank_t r> class tensor_reference;
 
 class reference
 {
@@ -38,22 +43,26 @@ class reference
 
     virtual void unbind() = 0;
 
-    template <typename R, ttl::rank_t r> tensor_reference<R, r> &as()
+    template <typename R, ttl::rank_t r, typename D>
+    tensor_reference<R, r, D> &as()
     {
-        return *down_cast<tensor_reference<R, r>>(this);
+        return *down_cast<tensor_reference<R, r, D>>(this);
     }
 };
 
-template <typename R, ttl::rank_t r> class tensor_reference : public reference
+template <typename R, ttl::rank_t r, typename D>
+class tensor_reference : public reference
 {
+    using Ref = typename D::template reference_type<R, r>;
+
     const ttl::shape<r> shape_;
 
-    std::optional<ttl::tensor_ref<R, r>> value_;
+    std::optional<Ref> value_;
 
   public:
     tensor_reference(const ttl::shape<r> &shape) : shape_(shape) {}
 
-    void bind(const ttl::tensor_ref<R, r> &t)
+    void bind(const Ref &t)
     {
         if (t.shape() != shape_) {
             throw std::logic_error("tensor_reference"
@@ -67,27 +76,28 @@ template <typename R, ttl::rank_t r> class tensor_reference : public reference
 
     void unbind() override { value_.reset(); }
 
-    ttl::tensor_ref<R, r> get() const { return value_.value(); }
+    Ref get() const { return value_.value(); }
 };
 
-class variable_manager
+template <typename device> class variable_manager
 {
     std::vector<std::unique_ptr<variable>> variables_;
     std::vector<std::unique_ptr<reference>> references_;
 
   public:
     template <typename R, ttl::rank_t r>
-    tensor_variable<R, r> *create_tensor(const ttl::shape<r> &shape)
+    tensor_variable<R, r, device> *create_tensor(const ttl::shape<r> &shape)
     {
-        auto v = new tensor_variable<R, r>(shape);
+        auto v = new tensor_variable<R, r, device>(shape);
         variables_.push_back(std::unique_ptr<variable>(v));
         return v;
     }
 
     template <typename R, ttl::rank_t r>
-    tensor_reference<R, r> *create_tensor_reference(const ttl::shape<r> &shape)
+    tensor_reference<R, r, device> *
+    create_tensor_reference(const ttl::shape<r> &shape)
     {
-        auto tr = new tensor_reference<R, r>(shape);
+        auto tr = new tensor_reference<R, r, device>(shape);
         references_.push_back(std::unique_ptr<reference>(tr));
         return tr;
     }
