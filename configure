@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+HAVE_CUDA=0
+if [ -f /usr/include/cuda_runtime.h ]; then
+    HAVE_CUDA=1
+fi
+
 BUILD_TESTS=0
 BUILD_GTEST=0
 BUILD_EXAMPLES=1
@@ -9,6 +14,7 @@ USE_BLAS=0
 BLAS_HOME=
 USE_CMAKE=1
 USE_CLANG_TIDY=0
+ENABLE_CUDA=0
 
 parse_args() {
     for i in "$@"; do
@@ -39,6 +45,12 @@ parse_args() {
             ;;
         --simple)
             USE_CMAKE=0
+            ;;
+        --disable-cuda)
+            ENABLE_CUDA=0
+            ;;
+        --enable-cuda)
+            ENABLE_CUDA=1
             ;;
         *)
             echo "unknown argument $i"
@@ -78,6 +90,8 @@ add_cmake_flags() {
         fi
         add_cmake_flag BUILD_GTEST ${BUILD_GTEST}
     fi
+
+    add_cmake_flag HAVE_CUDA ${HAVE_CUDA}
     add_cmake_flag BUILD_TESTS ${BUILD_TESTS}
     add_cmake_flag BUILD_EXAMPLES ${BUILD_EXAMPLES}
     add_cmake_flag BUILD_GPU_EXAMPLES ${BUILD_GPU_EXAMPLES}
@@ -88,7 +102,7 @@ add_cmake_flags() {
     add_cmake_flag STDTENSOR_GIT_TAG $(head -n 1 ./deps/stdtensor)
 
     add_cmake_flag EXECUTABLE_OUTPUT_PATH $(pwd)/bin
-    # add_cmake_flag LIBRARY_OUTPUT_PATH $(pwd)/lib
+    add_cmake_flag LIBRARY_OUTPUT_PATH $(pwd)/lib
     add_cmake_flag CMAKE_BUILD_TYPE Release
 
     add_cmake_flag CMAKE_EXPORT_COMPILE_COMMANDS 1

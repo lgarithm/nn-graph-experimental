@@ -9,7 +9,7 @@ TEST(gradient_test, test1)
     auto y = b.covar<float>("y", ttl::make_shape());
     auto z = b.invoke<float>("z", nn::ops::add(), x, y);
 
-    auto [_, gvs] = b.gradients(z);
+    auto gvs = b.gradients(z);
 
     ASSERT_EQ(gvs.size(), static_cast<size_t>(2));
     ASSERT_EQ(gvs[0].second, x);
@@ -30,7 +30,7 @@ TEST(gradient_test, test2)
     auto v = b.invoke<float>("v", nn::ops::add(), y, z);
     auto w = b.invoke<float>("w", nn::ops::add(), u, v);
 
-    auto [_, gvs] = b.gradients(w);
+    auto gvs = b.gradients(w);
 
     ASSERT_EQ(gvs.size(), static_cast<size_t>(4));
 }

@@ -50,8 +50,6 @@ void train_cnn(int batch_size, int epoches)
     nn::graph::internal::optimizer opt;
     auto f = opt.minimize(b, loss, 0.01);
 
-    b.debug();
-
     nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);

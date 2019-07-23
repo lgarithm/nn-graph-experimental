@@ -1,6 +1,7 @@
 #pragma once
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/ops/constant.hpp>
+#include <nn/bits/ops/cuda_ops.hpp>
 #include <nn/bits/ops/init.hpp>
 
 namespace nn::graph::internal

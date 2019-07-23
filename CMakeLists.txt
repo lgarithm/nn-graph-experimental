@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
-PROJECT(libnn-graph)
+PROJECT(nn-graph)
 
 OPTION(USE_STRICT "Enable strict build options." OFF)
 IF(USE_STRICT)
@@ -49,6 +49,12 @@ IF(USE_OPENBLAS)
     ENDIF()
 ENDIF()
 
+IF(${HAVE_CUDA})
+
+ELSE()
+    ADD_DEFINITIONS(-DUSE_FAKE_CUDA_RUNTIME=1)
+ENDIF()
+
 OPTION(BUILD_EXAMPLES "Build examples." OFF)
 OPTION(BUILD_GPU_EXAMPLES "Build gpu examples." OFF)
 
@@ -63,6 +69,9 @@ IF(BUILD_EXAMPLES)
         TARGET_USE_STDTENSOR(${target})
         TARGET_USE_STDNN_OPS(${target})
         TARGET_LINK_LIBRARIES(${target} trace)
+        IF(${HAVE_CUDA})
+            TARGET_LINK_LIBRARIES(${target} cudart)
+        ENDIF()
         IF(USE_OPENBLAS)
             IF(APPLE)
                 TARGET_LINK_LIBRARIES(${target} openblas)

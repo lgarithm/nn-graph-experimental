@@ -29,6 +29,15 @@ thrust::device_ptr<R> end(const T<R, r, S> &t)
 namespace internal
 {
 template <typename R>
+void fill<R>::operator()(const ttl::cuda_tensor_ref<R, 1> &x, R value) const
+{
+    thrust::fill(begin(x), end(x), value);
+}
+
+template struct fill<float>;
+template struct fill<int>;
+
+template <typename R>
 void add<R>::operator()(const ttl::cuda_tensor_ref<R, 1> &z,
                         const ttl::cuda_tensor_view<R, 1> &x,
                         const ttl::cuda_tensor_view<R, 1> &y)
@@ -37,6 +46,7 @@ void add<R>::operator()(const ttl::cuda_tensor_ref<R, 1> &z,
 }
 
 template struct add<float>;
+template struct add<int>;
 
 }  // namespace internal
 }  // namespace example_ops

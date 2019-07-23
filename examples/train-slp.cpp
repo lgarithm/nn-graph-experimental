@@ -34,8 +34,6 @@ void slp_example(int batch_size, int epoches)
     nn::graph::optimizer opt;
     auto f = opt.minimize(b, loss, 0.5);
 
-    b.debug();
-
     nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);

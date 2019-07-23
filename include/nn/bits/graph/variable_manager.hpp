@@ -3,6 +3,7 @@
 #include <optional>
 #include <vector>
 
+#include <nn/bits/graph/common.hpp>
 #include <ttl/shape>
 
 namespace nn::graph::internal
