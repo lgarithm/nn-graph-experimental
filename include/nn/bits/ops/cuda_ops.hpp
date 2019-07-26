@@ -10,6 +10,8 @@ namespace ops
 template <typename F> class not_implemented_for_cuda
 {
   public:
+    template <typename... T> not_implemented_for_cuda(const T &...) {}
+
     template <typename... T> void operator()(const T &...) const
     {
         std::cerr << demangled_type_info_name(typeid(F))

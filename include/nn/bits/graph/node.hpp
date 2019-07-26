@@ -233,7 +233,7 @@ class func_node : public base_func_node
 
     void run(gpu_runtime &rt) const override
     {
-        using gpu_op_t = typename nn::for_device<F, nvidia_gpu>::type;
+        using gpu_op_t = typename for_device<F, nvidia_gpu>::type;
         const auto g = create_op<gpu_op_t>(f_);
         rt.run(g, std::make_tuple(y_), xs_);
     }
