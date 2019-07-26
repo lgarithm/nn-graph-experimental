@@ -14,6 +14,7 @@ using internal::node;
 using builder = internal::builder<runtime>;
 using gpu_builder = internal::builder<gpu_runtime>;
 using var_node = internal::base_var_node;
+using internal::op_node;
 using internal::optimizer;
 
 using internal::cpu;

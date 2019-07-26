@@ -1,4 +1,5 @@
 #pragma once
+#include <ttl/cuda_tensor>
 #include <ttl/tensor>
 
 #include <nn/bits/tuple.hpp>
@@ -55,6 +56,28 @@ chunk(const basic_tensor_view<R, r, S> &t, int k)
 {
     return internal::chunker<basic_tensor_view, R, r, S>()(t, k);
 }
+
+template <typename R, rank_t r, typename S>
+basic_cuda_tensor_ref<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_cuda_tensor<R, r, S> &t, int k)
+{
+    return internal::chunker<basic_cuda_tensor_ref, R, r, S>()(t, k);
+}
+
+template <typename R, rank_t r, typename S>
+basic_cuda_tensor_ref<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_cuda_tensor_ref<R, r, S> &t, int k)
+{
+    return internal::chunker<basic_cuda_tensor_ref, R, r, S>()(t, k);
+}
+
+template <typename R, rank_t r, typename S>
+basic_cuda_tensor_view<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_cuda_tensor_view<R, r, S> &t, int k)
+{
+    return internal::chunker<basic_cuda_tensor_view, R, r, S>()(t, k);
+}
+
 }  // namespace internal
 
 using internal::chunk;

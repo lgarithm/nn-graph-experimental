@@ -4,9 +4,11 @@
 #include <vector>
 
 #include <nn/bits/graph/common.hpp>
+#include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/device.hpp>
 #include <nn/bits/graph/execution.hpp>
 #include <nn/bits/graph/gradient_descent.hpp>
+#include <nn/bits/graph/operator.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/gradients>
 #include <ttl/tensor>
@@ -52,6 +54,13 @@ class op_node : public node
     {
     }
 
+    op_node(const std::string &name, const cpu_operation_t &f,
+            const gpu_operation_t &g,
+            const std::vector<const node *> &deps = {})
+        : name_(name), f_cpu_(f), f_gpu_(g), dependencies_(deps)
+    {
+    }
+
     const std::string &name() const override { return name_; }
 
     void run(cpu_runtime &rt) const override { f_cpu_(rt); }
@@ -91,12 +100,6 @@ class base_var_node : public node
 
     virtual op_node *apply_gradients(const float &eta,
                                      const var_node_list_t &gs) const = 0;
-
-    virtual op_node *apply_gradients_cpu(const float &eta,
-                                         const var_node_list_t &gs) const = 0;
-
-    virtual op_node *apply_gradients_gpu(const float &eta,
-                                         const var_node_list_t &gs) const = 0;
 };
 
 template <typename R, ttl::rank_t r> class var_node : public base_var_node
@@ -162,31 +165,14 @@ template <typename R, ttl::rank_t r> class var_node : public base_var_node
         return rt.get_view<R, r>(this);
     }
 
-    template <typename D>
-    op_node *apply_gradients(const float &eta, const var_node_list_t &gs) const
-    {
-        std::vector<const node *> deps(gs.size());
-        std::copy(gs.begin(), gs.end(), deps.begin());
-        return new op_node("apply_grad", gradient_descent<D>()(eta, this, gs),
-                           deps);
-    }
-
     op_node *apply_gradients(const float &eta,
                              const var_node_list_t &gs) const override
     {
-        return apply_gradients<cpu>(eta, gs);
-    }
-
-    op_node *apply_gradients_cpu(const float &eta,
-                                 const var_node_list_t &gs) const override
-    {
-        return apply_gradients<cpu>(eta, gs);
-    }
-
-    op_node *apply_gradients_gpu(const float &eta,
-                                 const var_node_list_t &gs) const override
-    {
-        return apply_gradients<nvidia_gpu>(eta, gs);
+        std::vector<const node *> deps(gs.size());
+        std::copy(gs.begin(), gs.end(), deps.begin());
+        return new op_node("apply_grad",  //
+                           gradient_descent<cpu>()(eta, this, gs),
+                           gradient_descent<nvidia_gpu>()(eta, this, gs), deps);
     }
 };
 
@@ -247,7 +233,9 @@ class func_node : public base_func_node
 
     void run(gpu_runtime &rt) const override
     {
-        rt.run(f_, std::make_tuple(y_), xs_);
+        using gpu_op_t = typename nn::for_device<F, nvidia_gpu>::type;
+        const auto g = create_op<gpu_op_t>(f_);
+        rt.run(g, std::make_tuple(y_), xs_);
     }
 };
 

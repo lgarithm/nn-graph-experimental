@@ -1,10 +1,16 @@
+// #define NN_GRAPG_TRACE 1
+
 #include <nn/graph>
 #include <nn/ops>
+#include <ttl/copy>
 #include <ttl/tensor>
 
-#include <nn/bits/ops/example_gpu_ops.hpp>
-
 #include "trace.hpp"
+
+template <typename T> auto make_tensor_like(const T &t)
+{
+    return ttl::tensor<typename T::value_type, T::rank>(t.shape());
+}
 
 void _eager_example()
 {
@@ -13,7 +19,7 @@ void _eager_example()
     ttl::cuda_tensor<R, 1> x(n);
     ttl::cuda_tensor<R, 1> y(n);
     ttl::cuda_tensor<R, 1> z(n);
-    example_ops::add()(ref(z), view(x), view(y));
+    nn::cuda::ops::add()(ref(z), view(x), view(y));
 }
 
 void warmup()
@@ -37,14 +43,14 @@ void graph_example()
 
     auto x = b.covar<int>(b.shape(n));
     auto y = b.covar<int>(b.shape(n));
-    auto z = b.invoke(example_ops::add(), x, y);
+    auto z = b.invoke(nn::ops::add(), x, y);
 
     nn::graph::gpu_runtime rt;
     b.build(rt);
     {
-        example_ops::ones()(x->get_ref(rt));
-        example_ops::ones()(y->get_ref(rt));
-        example_ops::ones()(z->get_ref(rt));
+        nn::cuda::ops::ones()(x->get_ref(rt));
+        nn::cuda::ops::ones()(y->get_ref(rt));
+        nn::cuda::ops::ones()(z->get_ref(rt));
     }
     b.run(rt, z);
     {
@@ -61,12 +67,11 @@ void gpu_sgd_example()
 
     nn::graph::gpu_builder b;
 
-    auto x =
-        b._covar<float, nn::graph::gpu>("x", b.shape());  //, nn::ops::ones());
+    auto x = b.covar<float>("x", b.shape(), nn::ops::ones());
     auto y = b.invoke(nn::ops::mul(), x, x);
 
     nn::graph::optimizer opt;
-    auto train_step = opt.minimize<nn::graph::gpu>(b, y);
+    auto train_step = opt.minimize(b, y);
 
     nn::graph::gpu_runtime rt;
     b.build(rt);
@@ -79,11 +84,16 @@ void gpu_sgd_example()
                   << std::endl;
         b.run(rt, train_step);
         {
-            // auto v = y->get_view(rt);
-            // std::cerr << "y = " << v.data()[0] << std::endl;
-        } {
-            // auto v = x->get_view(rt);
-            // std::cerr << "x = " << v.data()[0] << std::endl;
+            auto v = y->get_view(rt);
+            auto vv = make_tensor_like(v);
+            ttl::copy(ref(vv), v);
+            std::cerr << "y = " << vv.data()[0] << std::endl;
+        }
+        {
+            auto v = x->get_view(rt);
+            auto vv = make_tensor_like(v);
+            ttl::copy(ref(vv), v);
+            std::cerr << "x = " << vv.data()[0] << std::endl;
         }
     }
 }

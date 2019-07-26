@@ -65,34 +65,15 @@ void train_cnn(int batch_size, int epoches)
     auto test_images = prepro4(test.images);
     auto test_labels = prepro(test.labels);
 
-    const auto image_batches = ttl::chunk(images, batch_size);
-    const auto label_batches = ttl::chunk(labels, batch_size);
-    std::cerr << "batch size :: " << batch_size << std::endl;
-    using std::experimental::zip;
-    for (auto epoch : ttl::range(epoches)) {
-        TRACE_SCOPE("train epoch");
-        for (const auto idx : ttl::range<0>(image_batches)) {
-            {
-                // TRACE_SCOPE("train");
-                LOG_SCOPE("train");
-                rt.bind(xs, image_batches[idx]);
-                rt.bind(y_s, label_batches[idx]);
-                b.run(rt, f);
-            }
-            {
-                LOG_SCOPE("test");
-                const auto acc = test_all(b, rt, batch_size, test_images,
-                                          test_labels, xs, y_s, accuracy);
-                show_accuracy(acc, epoch + 1, idx + 1);
-            }
-        }
-    }
+    train_mnist("cpu", epoches, batch_size, b, rt, images, labels, test_images,
+                test_labels, xs, y_s, f, accuracy);
 }
 
 int main(int argc, char *argv[])
 {
     TRACE_SCOPE(argv[0]);
     const int batch_size = 50;
-    train_cnn(batch_size, 10);
+    const int epoches = 10;
+    train_cnn(batch_size, epoches);
     return 0;
 }

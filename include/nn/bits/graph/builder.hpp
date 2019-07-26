@@ -6,12 +6,12 @@
 #include <vector>
 
 #include <nn/bits/graph/back_propagation.hpp>
+#include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/execution.hpp>
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/bits/graph/symbol_manager.hpp>
 #include <nn/bits/ops/constant.hpp>
-#include <nn/bits/ops/cuda_ops.hpp>
 #include <nn/bits/ops/init.hpp>
 #include <nn/bits/ops/noop.hpp>
 #include <ttl/tensor>
@@ -86,29 +86,24 @@ class base_builder
         return n;
     }
 
-    template <typename R, typename D, ttl::rank_t r,
-              typename Init = nn::ops::noop>
-    var_node<R, r> *_covar(const std::string &name, const ttl::shape<r> &shape,
-                           const Init &init = Init())
+    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
+    var_node<R, r> *covar(const std::string &name, const ttl::shape<r> &shape,
+                          const Init &init = Init())
     {
         auto *n = new var_node<R, r>(shape, name);
         own(n);
         covars_.push_back(n);
         {
-            using RT = basic_runtime<D>;
-            auto i =
-                new op_node(name, [=](RT &rt) { init(n->get_ref(rt)); }, {});
+            using it = typename nn::for_device<Init, nvidia_gpu>::type;
+            const it init_g = create_op<it>(init);
+            auto i = new op_node(
+                name, [=](basic_runtime<cpu> &rt) { init(n->get_ref(rt)); },
+                [=](basic_runtime<nvidia_gpu> &rt) { init_g(n->get_ref(rt)); },
+                {});
             own(i);
             init_ops_.push_back(i);
         }
         return n;
-    }
-
-    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
-    var_node<R, r> *covar(const std::string &name, const ttl::shape<r> &shape,
-                          const Init &init = Init())
-    {
-        return _covar<R, cpu, r, Init>(name, shape, init);
     }
 
     template <typename R, ttl::rank_t r>
@@ -180,10 +175,19 @@ class base_builder
         return n;
     }
 
+    op_node *op(const std::string &name,
+                const std::function<void(cpu_runtime &)> &f,
+                const std::function<void(gpu_runtime &)> &g,
+                const std::vector<const node *> &deps = {})
+    {
+        auto n = new op_node(name, f, g, deps);
+        own(n);
+        return n;
+    }
+
     using grad_var_t = std::pair<const base_var_node *, const base_var_node *>;
 
-    template <typename R, ttl::rank_t r, typename D = cpu>
-    auto gradients(const var_node<R, r> *y)
+    template <typename R, ttl::rank_t r> auto gradients(const var_node<R, r> *y)
     {
         const std::set<const base_var_node *> xs(covars_.begin(),
                                                  covars_.end());
@@ -191,8 +195,7 @@ class base_builder
         std::queue<grad_var_t> q;
         using grad_init_t =
             typename grad_init<std::is_floating_point<R>::value>::type;
-        using init_op = typename nn::for_device<grad_init_t, D>::type;
-        auto gy = _covar<R, D, r>("g_" + y->name(), y->shape(), init_op());
+        auto gy = covar<R>("g_" + y->name(), y->shape(), grad_init_t());
         q.push(std::make_pair(gy, y));
 
         std::vector<grad_var_t> gvs;

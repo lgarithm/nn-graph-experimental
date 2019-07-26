@@ -31,25 +31,15 @@ template <> struct gradient<nn::ops::add, 1> {
 };
 
 //
-template <> struct gradient<nn::ops::mul, 0> {
-    using type = nn::experimental::ops::grad::mul<0>;
+template <int p> struct gradient<nn::ops::mul, p> {
+    using type = nn::experimental::ops::grad::mul<p>;
 };
 
-template <> struct gradient<nn::ops::mul, 1> {
-    using type = nn::experimental::ops::grad::mul<1>;
-};
-
-//
 // enum class image_order = {ops::hw};
 
-template <typename image_order>
-struct gradient<nn::ops::add_bias<image_order>, 0> {
-    using type = nn::experimental::ops::grad::add_bias<image_order, 0>;
-};
-
-template <typename image_order>
-struct gradient<nn::ops::add_bias<image_order>, 1> {
-    using type = nn::experimental::ops::grad::add_bias<image_order, 1>;
+template <typename image_order, int p>
+struct gradient<nn::ops::add_bias<image_order>, p> {
+    using type = nn::experimental::ops::grad::add_bias<image_order, p>;
 };
 
 //
@@ -63,25 +53,15 @@ template <> struct gradient<nn::ops::softmax, 0> {
 };
 
 //
-template <typename E> struct gradient<nn::ops::matmul_<E>, 0> {
-    using type = nn::experimental::ops::grad::matmul<0, E>;
-};
-
-template <typename E> struct gradient<nn::ops::matmul_<E>, 1> {
-    using type = nn::experimental::ops::grad::matmul<1, E>;
+template <typename E, int p> struct gradient<nn::ops::matmul_<E>, p> {
+    using type = nn::experimental::ops::grad::matmul<p, E>;
 };
 
 //
-template <typename image_order, typename filter_order>
-struct gradient<nn::ops::conv<image_order, filter_order>, 0> {
+template <typename image_order, typename filter_order, int p>
+struct gradient<nn::ops::conv<image_order, filter_order>, p> {
     using type =
-        nn::experimental::ops::grad::conv<image_order, filter_order, 0>;
-};
-
-template <typename image_order, typename filter_order>
-struct gradient<nn::ops::conv<image_order, filter_order>, 1> {
-    using type =
-        nn::experimental::ops::grad::conv<image_order, filter_order, 1>;
+        nn::experimental::ops::grad::conv<image_order, filter_order, p>;
 };
 
 }  // namespace nn
