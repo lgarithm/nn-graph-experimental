@@ -1,14 +1,5 @@
 INCLUDE(ExternalProject)
-
-SET(STDTRACER_GIT_URL
-    https://github.com/lgarithm/stdtracer.git
-    CACHE STRING "URL for clone stdtracer")
-
-SET(STDNN_OPS_GIT_URL
-    https://github.com/lgarithm/stdnn-ops.git
-    CACHE STRING "URL for clone stdnn-ops")
-
-SET(STDNN_OPS_GIT_TAG "master" CACHE STRING "git tag for checkout stdnn-ops")
+INCLUDE(cmake/deps.cmake)
 
 SET(PREFIX ${CMAKE_SOURCE_DIR}/3rdparty)
 
@@ -27,9 +18,6 @@ EXTERNALPROJECT_ADD(stdnn-ops-repo
                                -DBUILD_BENCHMARKS=0
                                -DBUILD_PACKAGES=0
                                -DUSE_OPENBLAS=0
-                               # -DOpenBLAS_INCLUDE_DIRS=$ENV{HOME}/local/openbl
-                               # as/include
-                               # -DCMAKE_PREFIX_PATH=$ENV{HOME}/local/openblas
                                -DSTDTENSOR_GIT_URL=${STDTENSOR_GIT_URL}
                                -DSTDTENSOR_GIT_TAG=${STDTENSOR_GIT_TAG}
                                -DSTDTRACER_GIT_URL=${STDTRACER_GIT_URL})

@@ -15,13 +15,12 @@ auto classification_output(builder &b,
     auto loss =
         b.template invoke<float>("loss", nn::ops::xentropy(), labels, probs);
 
-    auto predictions = b.template invoke<int32_t>(
-        "predictions", nn::experimental::ops::argmax(), probs);
+    auto predictions =
+        b.template invoke<int32_t>("predictions", nn::ops::argmax(), probs);
 
     auto accuracy = b.template invoke<float>(
-        "accuracy", nn::experimental::ops::similarity(), predictions,
-        b.template invoke<int32_t>("labels", nn::experimental::ops::argmax(),
-                                   labels));
+        "accuracy", nn::ops::similarity(), predictions,
+        b.template invoke<int32_t>("labels", nn::ops::argmax(), labels));
     return std::make_tuple(loss, accuracy);
 }
 }  // namespace nn::graph::layers

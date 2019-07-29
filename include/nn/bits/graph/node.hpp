@@ -98,8 +98,8 @@ class base_var_node : public node
         return const_cast<V *>(down_cast<V>(this));
     }
 
-    virtual op_node *apply_gradients(const float &eta,
-                                     const var_node_list_t &gs) const = 0;
+    virtual op_node *apply_gradients(const var_node_list_t &gs,
+                                     const base_var_node *lr) const = 0;
 };
 
 template <typename R, ttl::rank_t r> class var_node : public base_var_node
@@ -165,14 +165,15 @@ template <typename R, ttl::rank_t r> class var_node : public base_var_node
         return rt.get_view<R, r>(this);
     }
 
-    op_node *apply_gradients(const float &eta,
-                             const var_node_list_t &gs) const override
+    op_node *apply_gradients(const var_node_list_t &gs,
+                             const base_var_node *lr) const override
     {
         std::vector<const node *> deps(gs.size());
         std::copy(gs.begin(), gs.end(), deps.begin());
+        auto eta = lr->as<R, 0>();
         return new op_node("apply_grad",  //
-                           gradient_descent<cpu>()(eta, this, gs),
-                           gradient_descent<nvidia_gpu>()(eta, this, gs), deps);
+                           gradient_descent<cpu>()(this, gs, eta),
+                           gradient_descent<nvidia_gpu>()(this, gs, eta), deps);
     }
 };
 
@@ -196,9 +197,13 @@ class base_func_node : public node
 template <typename F, typename Node, typename... Nodes>
 class func_node : public base_func_node
 {
+    using gpu_op_t = typename for_device<F, nvidia_gpu>::type;
+
   protected:
     const std::string name_;
     const F f_;
+    const gpu_op_t g_;
+
     const Node *y_;
     const std::tuple<const Nodes *...> xs_;
 
@@ -209,7 +214,7 @@ class func_node : public base_func_node
 
     func_node(const std::string &name, const F &f, const Node *y,
               const std::tuple<const Nodes *...> &xs)
-        : name_(name), f_(f), y_(y), xs_(xs)
+        : name_(name), f_(f), g_(create_op<gpu_op_t>(f)), y_(y), xs_(xs)
     {
     }
 
@@ -233,10 +238,7 @@ class func_node : public base_func_node
 
     void run(gpu_runtime &rt) const override
     {
-        using gpu_op_t = typename for_device<F, nvidia_gpu>::type;
-        const auto g = create_op<gpu_op_t>(f_);
-        rt.run(g, std::make_tuple(y_), xs_);
+        rt.run(g_, std::make_tuple(y_), xs_);
     }
 };
-
 }  // namespace nn::graph::internal

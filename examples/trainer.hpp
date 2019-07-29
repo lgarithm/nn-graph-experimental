@@ -23,16 +23,15 @@ class simple_data_iterator
 
 class simple_trainer
 {
-    const std::string name_;
-
     const int epoches_;
     const int batch_size_;
+    const bool do_test_;
 
     using TestFunc = std::function<void(int epoch, int step)>;
 
   public:
-    simple_trainer(const std::string &name, int epoches, int batch_size)
-        : name_(name), epoches_(epoches), batch_size_(batch_size)
+    simple_trainer(int epoches, int batch_size, bool do_test = true)
+        : epoches_(epoches), batch_size_(batch_size), do_test_(do_test)
     {
     }
 
@@ -46,15 +45,9 @@ class simple_trainer
         std::cerr << "batch size :: " << batch_size_ << std::endl;
         simple_data_iterator train_epoch(batch_size_);
         for (auto epoch : ttl::range(epoches_)) {
-            TRACE_SCOPE(name_ + "::epoch");
             train_epoch(images, labels, [&](int idx, auto xs, auto y_s) {
-                TRACE_SCOPE(name_ + "::step");
                 train(idx, xs, y_s);
-                bool do_test = true;
-                if (do_test) {
-                    TRACE_SCOPE(name_ + "::test");
-                    test(epoch, idx);
-                }
+                if (do_test_) { test(epoch, idx); }
             });
         }
     }

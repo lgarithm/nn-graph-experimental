@@ -101,10 +101,6 @@ add_cmake_flags() {
 
     add_cmake_flag CMAKE_PREFIX_PATH "$HOME/local;$HOME/local/openblas:$HOME/local/gtest"
 
-    add_cmake_flag STDTENSOR_GIT_TAG $(head -n 1 ./deps/stdtensor)
-    add_cmake_flag STDNN_OPS_GIT_TAG $(head -n 1 ./deps/stdnn-ops)
-    add_cmake_flag CUNN_OPS_GIT_TAG $(head -n 1 ./deps/cunn-ops)
-
     add_cmake_flag EXECUTABLE_OUTPUT_PATH $(pwd)/bin
     add_cmake_flag LIBRARY_OUTPUT_PATH $(pwd)/lib
     add_cmake_flag CMAKE_BUILD_TYPE Release
@@ -119,6 +115,9 @@ add_cmake_flags() {
         add_cmake_flag BLAS_HOME ${BLAS_HOME}
     fi
 
+    add_cmake_flag STDTENSOR_GIT_TAG $(head -n 1 ./deps/stdtensor)
+    add_cmake_flag STDNN_OPS_GIT_TAG $(head -n 1 ./deps/stdnn-ops)
+    add_cmake_flag CUNN_OPS_GIT_TAG $(head -n 1 ./deps/cunn-ops)
 }
 
 cleanup_cmake_cache() {

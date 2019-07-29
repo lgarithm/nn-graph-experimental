@@ -1,4 +1,3 @@
-#include <nn/experimental/bits/ops/utility.hpp>
 #include <nn/experimental/datasets>
 #include <nn/graph>
 #include <nn/ops>
@@ -29,7 +28,7 @@ auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
     return std::make_tuple(images, labels, loss, accuracy);
 }
 
-void slp_cpu(int batch_size, int epoches)
+void slp_cpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
     nn::graph::builder b;
@@ -54,7 +53,7 @@ void slp_cpu(int batch_size, int epoches)
     auto test_images = prepro2(test.images);
     auto test_labels = prepro(test.labels);
 
-    train_mnist("cpu", epoches, batch_size, b, rt, images, labels, test_images,
+    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
                 test_labels, xs, y_s, f, accuracy);
 }
 
@@ -65,7 +64,7 @@ template <typename T> auto make_cuda_tensor_from(const T &t)
     return c;
 }
 
-void slp_gpu(int batch_size, int epoches)
+void slp_gpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
     nn::graph::gpu_builder b;
@@ -95,16 +94,22 @@ void slp_gpu(int batch_size, int epoches)
     auto test_images = make_cuda_tensor_from(view(test_images_cpu));
     auto test_labels = make_cuda_tensor_from(view(test_labels_cpu));
 
-    train_mnist("gpu", epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy);
+    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
+                test_labels, xs, y_s, f, accuracy, do_test);
 }
 
 int main(int argc, char *argv[])
 {
-    TRACE_SCOPE(argv[0]);
+    TRACE_SCOPE(__func__);
+    printf("%d\n", argc);
+    for (int i = 0; i < argc; ++i) { printf("arg[%d]=%s\n", i, argv[i]); }
     const int batch_size = 10000;
     const int epoches = 10;
-    slp_cpu(batch_size, epoches);
-    slp_gpu(batch_size, epoches);
+    const bool do_test = true;
+    if (argc > 1 && std::string(argv[1]) == "gpu") {
+        slp_gpu(batch_size, epoches, do_test);
+    } else {
+        slp_cpu(batch_size, epoches, do_test);
+    }
     return 0;
 }

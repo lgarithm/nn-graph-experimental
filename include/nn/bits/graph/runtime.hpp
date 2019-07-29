@@ -2,6 +2,7 @@
 #include <map>
 
 #include <ttl/shape>
+#include <ttl/show_size>
 
 #include <nn/bits/graph/apply.hpp>
 #include <nn/bits/graph/devices/cpu.hpp>
@@ -118,7 +119,19 @@ template <typename device> class basic_runtime : public runtime
     {
         const auto ys = tuple_map(_get_ref(this), outputs);
         const auto xs = tuple_map(_get_view(this), inputs);
-        apply_if(f, std::tuple_cat(ys, xs));
+        apply_if<device>(f, std::tuple_cat(ys, xs));
+    }
+
+    // debug
+
+    void debug()
+    {
+        size_t tot = 0;
+        for (auto [_, v] : vars_) {
+            std::cerr << static_cast<std::string>(*v) << std::endl;
+            tot += v->data_size();
+        }
+        std::cerr << "total size: " << show_size(tot) << std::endl;
     }
 };
 

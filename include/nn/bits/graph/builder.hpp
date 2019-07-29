@@ -284,6 +284,13 @@ template <typename RT> class builder : public base_builder
         execution e;
         _run(rt, e, y);
     }
-};
 
+    void debug_run(RT &rt, const base_var_node *y) const
+    {
+        if (links_.count(y) > 0) {
+            const auto f = links_.at(y);
+            f->run(rt);
+        }
+    }
+};
 }  // namespace nn::graph::internal

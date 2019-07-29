@@ -4,16 +4,67 @@
 #include <experimental/iterator>
 #include <experimental/reflect>
 #include <functional>
+#include <iostream>
 #include <sstream>
+
+#include <nn/bits/graph/common.hpp>
+#include <nn/bits/graph/device.hpp>
 
 #if NN_GRAPG_TRACE
 #include <nn/bits/graph/trace.hpp>
 #endif
 
-template <bool> struct maybe_apply;
+namespace nn::graph::internal
+{
+template <typename Tuple, size_t... I>
+std::string signature(const Tuple &args, std::index_sequence<I...>)
+{
+    std::array<std::string, sizeof...(I)> names(
+        {ttl::tensor_type_name(std::get<I>(args))...});
+    std::string name;
+    for (auto n : names) {
+        if (!name.empty()) { name += ","; }
+        name += n;
+    }
+    return name;
+}
 
-template <> struct maybe_apply<false> {
+template <typename F, typename... Args>
+std::string apply_name(const F &f, const std::tuple<Args...> &args,
+                       bool detail = false)
+{
+    const auto f_name = demangled_type_info_name(typeid(F));
+    if (detail) {
+        static constexpr auto arity = sizeof...(Args);
+        return f_name + "(" +
+               signature(args, std::make_index_sequence<arity>()) + ")";
+    } else {
+        return f_name;
+    }
+}
 
+template <typename> struct traced_apply;
+template <> struct traced_apply<cpu> {
+    template <typename F, typename... Args>
+    void operator()(const F &f, const std::tuple<Args...> &args) const
+    {
+        TRACE_SCOPE(apply_name(f, args, true));
+        std::apply(f, args);
+    }
+};
+
+template <> struct traced_apply<nvidia_gpu> {
+    template <typename F, typename... Args>
+    void operator()(const F &f, const std::tuple<Args...> &args) const
+    {
+        TRACE_CUDA_SCOPE(apply_name(f, args, true));
+        std::apply(f, args);
+    }
+};
+
+template <typename, bool> struct maybe_apply;
+
+template <typename D> struct maybe_apply<D, false> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
@@ -32,38 +83,21 @@ template <> struct maybe_apply<false> {
     }
 };
 
-template <> struct maybe_apply<true> {
-    template <typename Tuple, size_t... I>
-    static std::string signature(const Tuple &args, std::index_sequence<I...>)
-    {
-        std::array<std::string, sizeof...(I)> names(
-            {ttl::tensor_type_name(std::get<I>(args))...});
-        std::string name;
-        for (auto n : names) {
-            if (!name.empty()) { name += ","; }
-            name += n;
-        }
-        return name;
-    }
-
+template <typename D> struct maybe_apply<D, true> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
-        const auto f_name = demangled_type_info_name(typeid(F));
-        // static constexpr auto arity = sizeof...(Args);
-        // const auto name = f_name + "(" +
-        //                   signature(args, std::make_index_sequence<arity>())
-        //                   +
-        //                   ")";
 #if NN_GRAPG_TRACE
-        TRACE_SCOPE(f_name);
-#endif
+        traced_apply<D>()(f, args);
+#else
         std::apply(f, args);
+#endif
     }
 };
 
-template <typename F, typename... Args>
+template <typename D, typename F, typename... Args>
 void apply_if(const F &f, const std::tuple<Args...> &args)
 {
-    maybe_apply<std::is_invocable<F, Args...>::value>()(f, args);
+    maybe_apply<D, std::is_invocable<F, Args...>::value>()(f, args);
 }
+}  // namespace nn::graph::internal

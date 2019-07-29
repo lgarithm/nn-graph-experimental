@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 PROJECT(nn-graph)
 
-OPTION(USE_STRICT "Enable strict build options." ON)
+OPTION(USE_STRICT "Enable strict build options." OFF)
 IF(USE_STRICT)
     ADD_DEFINITIONS(-Wall)
     IF(APPLE)
@@ -99,6 +99,7 @@ IF(BUILD_EXAMPLES)
     SIMPLE_EXAMPLE(train-slp)
     SIMPLE_EXAMPLE(train-cnn)
     SIMPLE_EXAMPLE(mnist-dataset)
+    SIMPLE_EXAMPLE(bench-ops)
 
     IF(BUILD_GPU_EXAMPLES)
         ENABLE_LANGUAGE(CUDA)

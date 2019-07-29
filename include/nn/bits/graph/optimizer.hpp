@@ -28,9 +28,10 @@ class optimizer
         const auto gvs = b.gradients(l);
         const auto var_grads = group_gradients(gvs);
 
+        auto lr = b.covar<R>(b.shape(), nn::ops::constant<R>(-eta));
         std::vector<const node *> apply_ops;
         for (auto [v, gs] : var_grads) {
-            const auto op = v->apply_gradients(eta, gs);
+            const auto op = v->apply_gradients(gs, lr);
             apply_ops.push_back(op);
             b.own(op);
         }
