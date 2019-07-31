@@ -1,12 +1,6 @@
 #pragma once
 #include <nn/bits/graph/common.hpp>
-#include <ttl/bits/std_shape.hpp>
-
-namespace ttl
-{
-using internal::rank_t;
-template <rank_t r> using shape = ttl::internal::basic_shape<r>;
-}  // namespace ttl
+#include <ttl/shape>
 
 namespace nn::graph::internal
 {

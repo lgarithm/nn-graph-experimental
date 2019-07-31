@@ -1,5 +1,7 @@
 #pragma once
+#include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/node.hpp>
+#include <nn/bits/graph/operator.hpp>
 #include <nn/bits/ops/constant.hpp>
 #include <nn/bits/ops/init.hpp>
 
@@ -41,19 +43,6 @@ class gard_func_node
     }
 };
 
-template <bool, class G, class F> struct create_grad_op;
-template <class G, class F> struct create_grad_op<false, G, F> {
-    G operator()(const F &f) const
-    {
-        G g;
-        return g;
-    }
-};
-
-template <class G, class F> struct create_grad_op<true, G, F> {
-    G operator()(const F &f) const { return G(f); }
-};
-
 template <bool, int i, class Gi, class F, class Xi, class Node, class... Nodes>
 struct create_grad_func_node;
 
@@ -83,8 +72,7 @@ struct create_grad_func_node<true, i, Gi, F, Xi, Node, Nodes...> {
 
         if (gxi == nullptr) { throw std::logic_error("gx[i] is nullptr"); }
         const auto gn = demangled_type_info_name(typeid(Gi));
-        const Gi gi =
-            create_grad_op<std::is_constructible<Gi, F>::value, Gi, F>()(f);
+        const Gi gi = create_op<Gi>(f);
         return new gard_func_node<i, Gi, Node, Nodes...>(gn, gi, gxi, gy, y,
                                                          xs);
     }

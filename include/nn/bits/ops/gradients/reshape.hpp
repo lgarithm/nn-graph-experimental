@@ -2,7 +2,7 @@
 #include <nn/bits/ops/constant.hpp>
 #include <nn/common.hpp>
 
-namespace nn::experimental::ops::grad
+namespace nn::ops::grad
 {
 template <ttl::rank_t r> class reshape_copy
 {
@@ -28,4 +28,4 @@ template <ttl::rank_t r> class reshape_copy
         std::copy(gy.data(), gy.data_end(), gx.data());
     }
 };
-}  // namespace nn::experimental::ops::grad
+}  // namespace nn::ops::grad

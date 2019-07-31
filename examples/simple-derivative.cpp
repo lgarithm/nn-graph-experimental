@@ -12,7 +12,7 @@ int main()
     auto y = b.covar<float>("y", ttl::make_shape());
     auto z = b.invoke<float>("z", nn::ops::add(), x, y);
 
-    auto [gz, gvs] = b.gradients(z);
+    auto gvs = b.gradients(z);
     auto gs = firsts(gvs);
 
     nn::graph::runtime rt;
@@ -20,7 +20,6 @@ int main()
     {
         ttl::fill(x->get_ref(rt), static_cast<float>(1.0));
         ttl::fill(y->get_ref(rt), static_cast<float>(2.0));
-        ttl::fill(gz->as<float, 0>()->get_ref(rt), static_cast<float>(1.0));
     }
 
     b.run(rt, gs);

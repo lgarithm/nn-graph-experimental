@@ -4,10 +4,12 @@
 #include <vector>
 
 #include <nn/bits/graph/common.hpp>
+#include <nn/bits/graph/cuda_ops.hpp>
+#include <nn/bits/graph/device.hpp>
 #include <nn/bits/graph/execution.hpp>
+#include <nn/bits/graph/gradient_descent.hpp>
+#include <nn/bits/graph/operator.hpp>
 #include <nn/bits/graph/runtime.hpp>
-#include <nn/bits/ops/axpy.hpp>
-#include <nn/bits/tuple.hpp>
 #include <nn/gradients>
 #include <ttl/tensor>
 
@@ -21,28 +23,49 @@ class node
 
     virtual const std::string &name() const = 0;
 
-    virtual void run(runtime &rt) const = 0;
+    virtual void run(cpu_runtime &rt) const = 0;
+
+    virtual void run(gpu_runtime &rt) const = 0;
 };
 
 class op_node : public node
 {
     const std::string name_;
 
-    using operation_t = std::function<void(runtime &)>;
-    const operation_t f_;
+    using cpu_operation_t = std::function<void(cpu_runtime &)>;
+
+    using gpu_operation_t = std::function<void(gpu_runtime &)>;
+
+    const cpu_operation_t f_cpu_;
+    const gpu_operation_t f_gpu_;
 
     const std::vector<const node *> dependencies_;
 
   public:
-    op_node(const std::string &name, const operation_t &f,
+    op_node(const std::string &name, const cpu_operation_t &f,
             const std::vector<const node *> &deps = {})
-        : name_(name), f_(f), dependencies_(deps)
+        : name_(name), f_cpu_(f), dependencies_(deps)
+    {
+    }
+
+    op_node(const std::string &name, const gpu_operation_t &f,
+            const std::vector<const node *> &deps = {})
+        : name_(name), f_gpu_(f), dependencies_(deps)
+    {
+    }
+
+    op_node(const std::string &name, const cpu_operation_t &f,
+            const gpu_operation_t &g,
+            const std::vector<const node *> &deps = {})
+        : name_(name), f_cpu_(f), f_gpu_(g), dependencies_(deps)
     {
     }
 
     const std::string &name() const override { return name_; }
 
-    void run(runtime &rt) const override { f_(rt); }
+    void run(cpu_runtime &rt) const override { f_cpu_(rt); }
+
+    void run(gpu_runtime &rt) const override { f_gpu_(rt); }
 
     std::vector<const node *> dependencies() const { return dependencies_; }
 };
@@ -51,6 +74,9 @@ template <typename R, ttl::rank_t r> class var_node;
 
 class base_var_node : public node
 {
+  protected:
+    using var_node_list_t = std::vector<const base_var_node *>;
+
   public:
     virtual ~base_var_node() {}
 
@@ -58,9 +84,13 @@ class base_var_node : public node
 
     virtual std::string str() const = 0;
 
-    virtual void create(runtime &rt) const = 0;
+    virtual void create(cpu_runtime &rt) const = 0;
 
-    virtual void define(runtime &rt) const = 0;
+    virtual void define(cpu_runtime &rt) const = 0;
+
+    virtual void create(gpu_runtime &rt) const = 0;
+
+    virtual void define(gpu_runtime &rt) const = 0;
 
     template <typename R, ttl::rank_t r> var_node<R, r> *as() const
     {
@@ -68,9 +98,8 @@ class base_var_node : public node
         return const_cast<V *>(down_cast<V>(this));
     }
 
-    virtual op_node *
-    apply_gradients(const float &eta,
-                    const std::vector<const base_var_node *> &gs) const = 0;
+    virtual op_node *apply_gradients(const var_node_list_t &gs,
+                                     const base_var_node *lr) const = 0;
 };
 
 template <typename R, ttl::rank_t r> class var_node : public base_var_node
@@ -97,46 +126,54 @@ template <typename R, ttl::rank_t r> class var_node : public base_var_node
                ttl::to_string(shape_);
     }
 
-    void run(runtime &rt) const override {}  // noop
+    void run(cpu_runtime &rt) const override {}  // noop
+
+    void run(gpu_runtime &rt) const override {}  // noop
 
     var_node *dup(const std::string &name) const override
     {
         return new var_node(shape_, name);
     }
 
-    void create(runtime &rt) const override { rt.create<R>(shape_, this); }
+    void create(cpu_runtime &rt) const override { rt.create<R>(shape_, this); }
 
-    void define(runtime &rt) const override { rt.define<R>(shape_, this); }
+    void define(cpu_runtime &rt) const override { rt.define<R>(shape_, this); }
+
+    void create(gpu_runtime &rt) const override { rt.create<R>(shape_, this); }
+
+    void define(gpu_runtime &rt) const override { rt.define<R>(shape_, this); }
 
     ttl::shape<r> shape() const { return shape_; }
 
-    ttl::tensor_ref<R, r> get_ref(runtime &rt) const
+    ttl::tensor_ref<R, r> get_ref(cpu_runtime &rt) const
     {
-        return rt.get<R, r>(this);
+        return rt.get_ref<R, r>(this);
     }
 
-    ttl::tensor_view<R, r> get_view(runtime &rt) const
+    ttl::tensor_view<R, r> get_view(cpu_runtime &rt) const
     {
-        return rt.get<R, r>(this);
+        return rt.get_view<R, r>(this);
     }
 
-    op_node *
-    apply_gradients(const float &eta,
-                    const std::vector<const base_var_node *> &gs) const override
+    ttl::cuda_tensor_ref<R, r> get_ref(gpu_runtime &rt) const
+    {
+        return rt.get_ref<R, r>(this);
+    }
+
+    ttl::cuda_tensor_view<R, r> get_view(gpu_runtime &rt) const
+    {
+        return rt.get_view<R, r>(this);
+    }
+
+    op_node *apply_gradients(const var_node_list_t &gs,
+                             const base_var_node *lr) const override
     {
         std::vector<const node *> deps(gs.size());
         std::copy(gs.begin(), gs.end(), deps.begin());
-        return new op_node("apply_grad",
-                           [&, eta = eta, gs = gs, name = name_](runtime &rt) {
-                               ttl::tensor<R, 0> a;
-                               a.data()[0] = -eta;
-                               for (const auto g : gs) {
-                                   nn::ops::axpy()(get_ref(rt), view(a),
-                                                   g->as<R, r>()->get_view(rt),
-                                                   get_view(rt));
-                               }
-                           },
-                           deps);
+        auto eta = lr->as<R, 0>();
+        return new op_node("apply_grad",  //
+                           gradient_descent<cpu>()(this, gs, eta),
+                           gradient_descent<nvidia_gpu>()(this, gs, eta), deps);
     }
 };
 
@@ -157,25 +194,16 @@ class base_func_node : public node
     all_gradients(const base_var_node *gy) const = 0;
 };
 
-class get_view
-{
-    runtime &rt_;
-
-  public:
-    get_view(runtime &rt) : rt_(rt) {}
-
-    template <typename Node> auto operator()(const Node *x) const
-    {
-        return x->get_view(rt_);
-    }
-};
-
 template <typename F, typename Node, typename... Nodes>
 class func_node : public base_func_node
 {
+    using gpu_op_t = typename for_device<F, nvidia_gpu>::type;
+
   protected:
     const std::string name_;
     const F f_;
+    const gpu_op_t g_;
+
     const Node *y_;
     const std::tuple<const Nodes *...> xs_;
 
@@ -186,7 +214,7 @@ class func_node : public base_func_node
 
     func_node(const std::string &name, const F &f, const Node *y,
               const std::tuple<const Nodes *...> &xs)
-        : name_(name), f_(f), y_(y), xs_(xs)
+        : name_(name), f_(f), g_(create_op<gpu_op_t>(f)), y_(y), xs_(xs)
     {
     }
 
@@ -203,12 +231,14 @@ class func_node : public base_func_node
 
     const base_var_node *output() const override { return y_; }
 
-    void run(runtime &rt) const override
+    void run(cpu_runtime &rt) const override
     {
-        const auto inputs = tuple_map(get_view(rt), xs_);
-        const auto outputs = std::make_tuple(y_->get_ref(rt));
-        std::apply(f_, std::tuple_cat(outputs, inputs));
+        rt.run(f_, std::make_tuple(y_), xs_);
+    }
+
+    void run(gpu_runtime &rt) const override
+    {
+        rt.run(g_, std::make_tuple(y_), xs_);
     }
 };
-
 }  // namespace nn::graph::internal

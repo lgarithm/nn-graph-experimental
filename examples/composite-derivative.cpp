@@ -20,7 +20,7 @@ auto simple_auto(nn::graph::builder &b)
     auto v = b.invoke<float>("v", nn::ops::add(), y, z);
     auto w = b.invoke<float>("w", nn::ops::add(), u, v);
 
-    auto [gw, gvs] = b.gradients(w);
+    auto gvs = b.gradients(w);
     for (auto [g, v] : gvs) {
         std::cerr << "(" << g->name() << ", " << v->name() << ")" << std::endl;
     }
@@ -31,7 +31,6 @@ void example()
 {
     nn::graph::builder b;
     simple_auto(b);
-    b.debug();
     nn::graph::runtime rt;
     b.build(rt);
 }

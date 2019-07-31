@@ -1,8 +1,10 @@
 #pragma once
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
+#include <nn/bits/graph/common.hpp>
 #include <ttl/shape>
 
 namespace nn::graph::internal
@@ -20,6 +22,10 @@ class variable
     {
         return *down_cast<tensor_variable<R, r, D>>(this);
     }
+
+    virtual size_t data_size() const = 0;
+
+    virtual operator std::string() const = 0;
 };
 
 template <typename R, ttl::rank_t r, typename D>
@@ -34,6 +40,13 @@ class tensor_variable : public variable
     tensor_variable(const ttl::shape<r> &shape) : value_(shape) {}
 
     Ref get() const { return Ref(value_); }
+
+    size_t data_size() const override { return value_.data_size(); }
+
+    operator std::string() const override
+    {
+        return ttl::tensor_type_name(value_);
+    }
 };
 
 class reference
