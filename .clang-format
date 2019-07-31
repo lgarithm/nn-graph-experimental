@@ -6,6 +6,7 @@ AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 
+IndentPPDirectives: AfterHash
 IndentWidth: 4
 BreakBeforeBraces: Linux
 SortIncludes: true

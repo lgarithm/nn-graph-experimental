@@ -4,9 +4,10 @@
 #include <sstream>
 
 #include <nn/bits/graph/apply.hpp>
-#include <nn/cuda/ops>
+#include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/ops>
 #include <ttl/algorithm>
+#include <ttl/cuda_tensor>
 #include <ttl/range>
 
 #include "trace.hpp"
@@ -45,6 +46,8 @@ template <> struct make_tensor<cpu> {
     }
 };
 
+#ifdef NN_GRAPH_ENABLE_CUDA
+
 template <> struct make_tensor<gpu> {
     template <typename TT> auto operator()(const TT &tt) const
     {
@@ -54,6 +57,7 @@ template <> struct make_tensor<gpu> {
         return t;
     }
 };
+#endif
 
 class benchmark
 {

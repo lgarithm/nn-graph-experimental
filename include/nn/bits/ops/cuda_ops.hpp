@@ -42,7 +42,7 @@ template <typename F> struct cuda_op {
 };
 }  // namespace nn
 
-#ifdef ENABLE_CUDA
+#ifdef NN_GRAPH_ENABLE_CUDA
 #include <nn/bits/ops/gradients/bias.hpp>
 #include <nn/bits/ops/gradients/matmul.hpp>
 #include <nn/bits/ops/gradients/mul.hpp>

@@ -32,13 +32,17 @@ void bench_ops(const std::string prefix)
         tt<float, 0> scalar_t;
         tt<int32_t, 1> seq_t(n);
         b(cpu(), nn::ops::similarity(), scalar_t, seq_t, seq_t);
+#ifdef NN_GRAPH_ENABLE_CUDA
         b(gpu(), nn::cuda::ops::similarity(), scalar_t, seq_t, seq_t);
+#endif
     }
     {
         tt<float, 0> scalar_t;
         tt<float, 2> weight_t(28 * 28, 10);
         b(cpu(), nn::ops::axpy(), weight_t, scalar_t, weight_t, weight_t);
+#ifdef NN_GRAPH_ENABLE_CUDA
         b(gpu(), nn::cuda::ops::axpy(), weight_t, scalar_t, weight_t, weight_t);
+#endif
     }
 }
 
