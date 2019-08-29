@@ -22,7 +22,7 @@ jobs:
       run: |
         git clone https://github.com/lgarithm/stdtensor.git
         cd stdtensor
-        git checkout $(head -n 1 ./deps/stdtensor)
+        git checkout $(head -n 1 ../deps/stdtensor)
         ./configure --prefix=$HOME/local
         make install
 
@@ -30,7 +30,7 @@ jobs:
       run: |
         git clone https://github.com/lgarithm/stdnn-ops.git
         cd stdnn-ops
-        git checkout $(head -n 1 ./deps/stdnn-ops)
+        git checkout $(head -n 1 ../deps/stdnn-ops)
         ./configure --prefix=$HOME/local
         make install
 
