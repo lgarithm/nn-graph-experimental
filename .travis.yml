@@ -1,0 +1,20 @@
+language: cpp
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-7
+    - cloc
+    # - libgtest-dev # FIXME: make it work with cmake
+
+before_install:
+- export CC=gcc-7
+- export CXX=g++-7
+
+script:
+- ./configure --tests --build-gtest
+- make
+- make test
+- cloc include
