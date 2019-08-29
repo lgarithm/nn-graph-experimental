@@ -42,16 +42,21 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     b.build(rt);
     b.init(rt);
 
-    using nn::experimental::datasets::load_mnist_data;
-    const std::string home(std::getenv("HOME"));
-    const std::string prefix = home + "/var/data/mnist";
-    const auto train = load_mnist_data(prefix, "train");
-    const auto test = load_mnist_data(prefix, "t10k");
+    const auto [images, labels, test_images, test_labels] = [&] {
+        TRACE_SCOPE("prepro");
+        using nn::experimental::datasets::load_mnist_data;
+        const std::string home(std::getenv("HOME"));
+        const std::string prefix = home + "/var/data/mnist";
+        const auto train = load_mnist_data(prefix, "train");
+        const auto test = load_mnist_data(prefix, "t10k");
 
-    auto images = prepro2(train.images);
-    auto labels = prepro(train.labels);
-    auto test_images = prepro2(test.images);
-    auto test_labels = prepro(test.labels);
+        auto images = prepro2(train.images);
+        auto labels = prepro(train.labels);
+        auto test_images = prepro2(test.images);
+        auto test_labels = prepro(test.labels);
+        return std::make_tuple(std::move(images), std::move(labels),
+                               std::move(test_images), std::move(test_labels));
+    }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
                 test_labels, xs, y_s, f, accuracy);
@@ -78,31 +83,41 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     b.build(rt);
     b.init(rt);
 
-    using nn::experimental::datasets::load_mnist_data;
-    const std::string home(std::getenv("HOME"));
-    const std::string prefix = home + "/var/data/mnist";
-    const auto train = load_mnist_data(prefix, "train");
-    const auto test = load_mnist_data(prefix, "t10k");
+    const auto [images, labels, test_images, test_labels] = [&] {
+        TRACE_SCOPE("prepro");
+        using nn::experimental::datasets::load_mnist_data;
+        const std::string home(std::getenv("HOME"));
+        const std::string prefix = home + "/var/data/mnist";
+        const auto train = load_mnist_data(prefix, "train");
+        const auto test = load_mnist_data(prefix, "t10k");
 
-    auto images_cpu = prepro2(train.images);
-    auto labels_cpu = prepro(train.labels);
-    auto test_images_cpu = prepro2(test.images);
-    auto test_labels_cpu = prepro(test.labels);
+        auto images_cpu = prepro2(train.images);
+        auto labels_cpu = prepro(train.labels);
+        auto test_images_cpu = prepro2(test.images);
+        auto test_labels_cpu = prepro(test.labels);
 
-    auto images = make_cuda_tensor_from(view(images_cpu));
-    auto labels = make_cuda_tensor_from(view(labels_cpu));
-    auto test_images = make_cuda_tensor_from(view(test_images_cpu));
-    auto test_labels = make_cuda_tensor_from(view(test_labels_cpu));
+        auto images = make_cuda_tensor_from(view(images_cpu));
+        auto labels = make_cuda_tensor_from(view(labels_cpu));
+        auto test_images = make_cuda_tensor_from(view(test_images_cpu));
+        auto test_labels = make_cuda_tensor_from(view(test_labels_cpu));
+        return std::make_tuple(std::move(images), std::move(labels),
+                               std::move(test_images), std::move(test_labels));
+    }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
                 test_labels, xs, y_s, f, accuracy, do_test);
 }
 
+void show_args(int argc, char *argv[])
+{
+    printf("argc=%d\n", argc);
+    for (int i = 0; i < argc; ++i) { printf("argv[%d]=%s\n", i, argv[i]); }
+}
+
 int main(int argc, char *argv[])
 {
     TRACE_SCOPE(__func__);
-    printf("%d\n", argc);
-    for (int i = 0; i < argc; ++i) { printf("arg[%d]=%s\n", i, argv[i]); }
+    show_args(argc, argv);
     const int batch_size = 10000;
     const int epoches = 10;
     const bool do_test = true;

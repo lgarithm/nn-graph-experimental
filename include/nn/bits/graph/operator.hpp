@@ -31,7 +31,7 @@ template <typename F, typename B> F create_op(const B &b)
     return create_op_t<std::is_constructible<F, B>::value, F, B>()(b);
 }
 
-#ifdef ENABLE_CUDA
+#ifdef NN_GRAPH_ENABLE_CUDA
 template <typename F, typename R>
 cuda::ops::constant<R> create_op(const nn::ops::constant<R> &f)
 {
