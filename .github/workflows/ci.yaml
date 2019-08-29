@@ -1,0 +1,42 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    # https://help.github.com/en/articles/virtual-environments-for-github-actions#supported-virtual-environments
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: install stdtracer
+      run: |
+        git clone https://github.com/lgarithm/stdtracer.git
+        cd stdtracer
+        ./configure --prefix=$HOME/local
+        make install
+
+    - name: install stdtensor
+      run: |
+        git clone https://github.com/lgarithm/stdtensor.git
+        cd stdtensor
+        ./configure --prefix=$HOME/local
+        make install
+
+    - name: install stdnn-ops
+      run: |
+        git clone https://github.com/lgarithm/stdnn-ops.git
+        cd stdnn-ops
+        ./configure --prefix=$HOME/local
+        make install
+
+    # - run: echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
+    - run: sudo apt update
+    - run: sudo apt install -y libopenblas-dev
+    # - run: sudo apt install -y nvidia-cuda-toolkit
+
+    - run: ./configure --tests --build-gtest
+    - run: make
+    - run: make test
