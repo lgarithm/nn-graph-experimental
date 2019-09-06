@@ -43,15 +43,15 @@ template <typename F> struct cuda_op {
 }  // namespace nn
 
 #ifdef NN_GRAPH_ENABLE_CUDA
-#include <nn/bits/ops/gradients/bias.hpp>
-#include <nn/bits/ops/gradients/matmul.hpp>
-#include <nn/bits/ops/gradients/mul.hpp>
-#include <nn/bits/ops/gradients/softmax.hpp>
-#include <nn/bits/ops/gradients/xentropy.hpp>
-#include <nn/ops>
+#    include <nn/bits/ops/gradients/bias.hpp>
+#    include <nn/bits/ops/gradients/matmul.hpp>
+#    include <nn/bits/ops/gradients/mul.hpp>
+#    include <nn/bits/ops/gradients/softmax.hpp>
+#    include <nn/bits/ops/gradients/xentropy.hpp>
+#    include <nn/ops>
 
-#include <nn/cuda/gradients>
-#include <nn/cuda/ops>
+#    include <nn/cuda/gradients>
+#    include <nn/cuda/ops>
 
 namespace nn
 {
@@ -92,9 +92,9 @@ template <typename E> struct cuda_op<ops::matmul_<E>> {
     using type = cuda::ops::matmul;
 };
 
-// template <> struct cuda_op<ops::conv<ops::nhwc, ops::rscd>> {
-//     using type = cuda::ops::conv<nhwc, rscd>;
-// };
+template <> struct cuda_op<ops::conv<ops::nhwc, ops::rscd>> {
+    using type = cuda::ops::conv<nhwc, rscd>;
+};
 
 template <typename image_order> struct cuda_op<ops::add_bias<image_order>> {
     using type = cuda::ops::add_bias<image_order>;
