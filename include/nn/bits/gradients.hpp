@@ -1,5 +1,4 @@
 #pragma once
-#include <nn/bits/ops/constant.hpp>
 #include <nn/bits/ops/gradients/add.hpp>
 #include <nn/bits/ops/gradients/bias.hpp>
 #include <nn/bits/ops/gradients/conv.hpp>
@@ -17,8 +16,8 @@ template <typename F, int arity> struct gradient {
 };
 
 //
-template <ttl::rank_t r> struct gradient<ops::reshape_copy<r>, 0> {
-    using type = ops::grad::reshape_copy<r>;
+template <ttl::rank_t... rs> struct gradient<ops::copy_flatten<rs...>, 0> {
+    using type = ops::grad::copy_flatten<rs...>;
 };
 
 //

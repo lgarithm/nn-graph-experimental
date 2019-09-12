@@ -11,7 +11,6 @@
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/bits/graph/symbol_manager.hpp>
-#include <nn/bits/ops/constant.hpp>
 #include <nn/bits/ops/init.hpp>
 #include <nn/bits/ops/noop.hpp>
 #include <ttl/tensor>

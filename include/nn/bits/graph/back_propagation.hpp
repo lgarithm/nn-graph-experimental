@@ -2,7 +2,6 @@
 #include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/graph/operator.hpp>
-#include <nn/bits/ops/constant.hpp>
 #include <nn/bits/ops/init.hpp>
 
 namespace nn::graph::internal

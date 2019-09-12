@@ -8,7 +8,6 @@
 #include "trace.hpp"
 #include "utils.hpp"
 #include <nn/bits/ops/chunk.hpp>
-#include <nn/bits/ops/constant.hpp>
 #include <nn/contrib/graph/layers/conv.hpp>
 #include <nn/contrib/graph/layers/dense.hpp>
 #include <nn/contrib/graph/layers/output.hpp>
@@ -31,9 +30,8 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
     auto [l1, w1, b1] = cnn(b, images, b.shape(3, 3), 32);
     auto [l2, w2, b2] = cnn(b, l1, b.shape(3, 3), 32);
 
-    auto cnn_flat = b.template invoke<float>(
-        "cnn_flat",
-        nn::ops::reshape_copy<2>(nn::ops::as_mat_shape<1, 3>(l2->shape())), l2);
+    auto cnn_flat =
+        b.template invoke<float>("cnn_flat", nn::ops::copy_flatten<1, 3>(), l2);
 
     auto [l_out, w3, b3] = dense(b, cnn_flat, logits);
     auto [loss, accuracy] = classification_output(b, l_out, labels);
@@ -115,7 +113,7 @@ int main(int argc, char *argv[])
 {
     TRACE_SCOPE(__func__);
     const int batch_size = 1000;
-    const int epoches = 3;
+    const int epoches = 1;
     const bool do_test = true;
     if (argc > 1 && std::string(argv[1]) == "gpu") {
         cnn_gpu(batch_size, epoches, do_test);

@@ -46,6 +46,7 @@ template <typename F> struct cuda_op {
 #    include <nn/bits/ops/gradients/bias.hpp>
 #    include <nn/bits/ops/gradients/matmul.hpp>
 #    include <nn/bits/ops/gradients/mul.hpp>
+#    include <nn/bits/ops/gradients/reshape.hpp>
 #    include <nn/bits/ops/gradients/softmax.hpp>
 #    include <nn/bits/ops/gradients/xentropy.hpp>
 #    include <nn/ops>
@@ -70,6 +71,14 @@ template <typename R> struct cuda_op<ops::constant<R>> {
 
 template <> struct cuda_op<ops::uniform_distribution> {
     using type = cuda::ops::uniform_distribution;
+};
+
+template <ttl::rank_t... rs> struct cuda_op<ops::copy_flatten<rs...>> {
+    using type = cuda::ops::copy_flatten<rs...>;
+};
+
+template <ttl::rank_t... rs> struct cuda_op<ops::grad::copy_flatten<rs...>> {
+    using type = cuda::ops::grad::copy_flatten<rs...>;
 };
 
 template <> struct cuda_op<ops::add> {

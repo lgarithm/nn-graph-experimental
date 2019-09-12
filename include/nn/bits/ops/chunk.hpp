@@ -37,24 +37,24 @@ struct chunker {
 };
 
 template <typename R, rank_t r, typename S>
-basic_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_tensor<R, r, S> &t, int k)
+basic_host_tensor_ref<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_host_tensor<R, r, S> &t, int k)
 {
-    return internal::chunker<basic_tensor_ref, R, r, S>()(t, k);
+    return internal::chunker<basic_host_tensor_ref, R, r, S>()(t, k);
 }
 
 template <typename R, rank_t r, typename S>
-basic_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_tensor_ref<R, r, S> &t, int k)
+basic_host_tensor_ref<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_host_tensor_ref<R, r, S> &t, int k)
 {
-    return internal::chunker<basic_tensor_ref, R, r, S>()(t, k);
+    return internal::chunker<basic_host_tensor_ref, R, r, S>()(t, k);
 }
 
 template <typename R, rank_t r, typename S>
-basic_tensor_view<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_tensor_view<R, r, S> &t, int k)
+basic_host_tensor_view<R, r + 1, typename super_shape<S>::type>
+chunk(const basic_host_tensor_view<R, r, S> &t, int k)
 {
-    return internal::chunker<basic_tensor_view, R, r, S>()(t, k);
+    return internal::chunker<basic_host_tensor_view, R, r, S>()(t, k);
 }
 
 template <typename R, rank_t r, typename S>
