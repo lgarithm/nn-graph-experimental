@@ -33,7 +33,9 @@ IF(${ENABLE_CUDA})
 ENDIF()
 
 OPTION(USE_OPENBLAS "Build with blas." OFF)
-SET(BLAS_HOME "" CACHE STRING "blas install dir")
+SET(BLAS_HOME
+    ""
+    CACHE STRING "blas install dir")
 
 IF(USE_OPENBLAS)
     MESSAGE("Using OpenBLAS")
@@ -54,57 +56,15 @@ IF(USE_OPENBLAS)
 ENDIF()
 
 IF(${ENABLE_CUDA})
-
+    # NOOP
 ELSE()
     ADD_DEFINITIONS(-DUSE_FAKE_CUDA_RUNTIME=1)
 ENDIF()
 
 OPTION(BUILD_EXAMPLES "Build examples." OFF)
-OPTION(BUILD_GPU_EXAMPLES "Build gpu examples." OFF)
 
 IF(BUILD_EXAMPLES)
-    FIND_PACKAGE(stdtracer REQUIRED)
-
-    ADD_LIBRARY(trace ${CMAKE_SOURCE_DIR}/examples/trace.cpp)
-    TARGET_USE_STDTRACER(trace)
-
-    FUNCTION(ADD_EXAMPLE target)
-        ADD_EXECUTABLE(${target} ${ARGN})
-        TARGET_USE_STDTENSOR(${target})
-        TARGET_USE_STDNN_OPS(${target})
-        TARGET_LINK_LIBRARIES(${target} trace)
-        IF(${ENABLE_CUDA})
-            TARGET_LINK_LIBRARIES(${target} cudart)
-            TARGET_USE_CUNN_OPS(${target})
-        ENDIF()
-        IF(USE_OPENBLAS)
-            IF(APPLE)
-                TARGET_LINK_LIBRARIES(${target} openblas)
-            ELSEIF(BLAS_HOME)
-                TARGET_LINK_LIBRARIES(${target} openblas)
-            ELSE()
-                TARGET_LINK_LIBRARIES(${target} ${OpenBLAS_LIBRARIES})
-            ENDIF()
-        ENDIF()
-    ENDFUNCTION()
-
-    FUNCTION(SIMPLE_EXAMPLE target)
-        ADD_EXAMPLE(${target} examples/${target}.cpp)
-    ENDFUNCTION()
-
-    SIMPLE_EXAMPLE(a-plus-b)
-    SIMPLE_EXAMPLE(quadratic-function)
-    SIMPLE_EXAMPLE(composite-derivative)
-    SIMPLE_EXAMPLE(simple-derivative)
-    SIMPLE_EXAMPLE(train-slp)
-    SIMPLE_EXAMPLE(train-cnn)
-    SIMPLE_EXAMPLE(mnist-dataset)
-    SIMPLE_EXAMPLE(bench-ops)
-
-    IF(BUILD_GPU_EXAMPLES)
-        ENABLE_LANGUAGE(CUDA)
-        SIMPLE_EXAMPLE(gpu-example)
-    ENDIF()
+    INCLUDE(cmake/examples.cmake)
 ENDIF()
 
 OPTION(BUILD_TESTS "Build tests." ON)
