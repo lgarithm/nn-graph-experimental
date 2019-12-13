@@ -3,7 +3,7 @@
 namespace nn::graph::internal
 {
 
-// A tensor_function wraps an operator in stdnn-ops or cunn-ops
+// A tensor_function wraps an operator in stdnn-ops or stdnn-ops-cuda
 template <typename Op> class tensor_function
 {
     const Op f_;
