@@ -1,5 +1,6 @@
 #pragma once
-#include <ttl/cuda_tensor>
+#include <ttl/bits/std_cuda_tensor.hpp>
+#include <ttl/bits/std_host_tensor.hpp>
 #include <ttl/tensor>
 
 #include <nn/bits/tuple.hpp>
@@ -14,72 +15,37 @@ template <typename D, rank_t r> struct super_shape<basic_shape<r, D>> {
     using type = basic_shape<r + 1, D>;
 };
 
-template <template <typename, rank_t, typename> class T,  //
-          typename R, rank_t r, typename S>
-struct chunker {
-    using dim_t = typename T<R, r, S>::shape_type::dimension_type;
+template <typename R, typename S, typename D, typename A> struct chunker {
     using S1 = typename super_shape<S>::type;
+    using A1 = typename basic_tensor_traits<R, A, D>::Access;
+    using T1 = basic_tensor<R, S1, D, A1>;
+    using T = basic_tensor<R, S, D, A>;
+    using dim_t = typename T::shape_type::dimension_type;
 
-    T<R, r + 1, S1> operator()(const T<R, r, S> &t, const dim_t &k) const
+    static constexpr rank_t r = S::rank;
+
+    T1 operator()(const T &t, const dim_t &k) const
     {
         static_assert(r > 0, "rank > 0 is requied");
-        const auto l = std::get<0>(t.shape().dims());
-        const auto n = l / k;
-        if (const auto dropped = (l - n * k); dropped > 0) {
+        const dim_t l = std::get<0>(t.shape().dims());
+        const dim_t n = l / k;
+        if (const dim_t dropped = (l - n * k); dropped > 0) {
             // drop last l - n * k elements
             std::cerr << "dropped last " << dropped << " sub tensors"
                       << std::endl;
         }
         const std::array<dim_t, r - 1> sub_dims = t.shape().subshape().dims();
         const auto dim_tup = std::tuple_cat(std::make_tuple(n, k), sub_dims);
-        return T<R, r + 1, S1>(t.data(), tup2arr<dim_t>(dim_tup));
+        return T1(t.data(), tup2arr<dim_t>(dim_tup));
     }
 };
 
-template <typename R, rank_t r, typename S>
-basic_host_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_host_tensor<R, r, S> &t, int k)
+template <typename R, typename S, typename D, typename A>
+typename chunker<R, S, D, A>::T1 chunk(const basic_tensor<R, S, D, A> &t, int k)
 {
-    return internal::chunker<basic_host_tensor_ref, R, r, S>()(t, k);
+    return chunker<R, S, D, A>()(t, k);
 }
-
-template <typename R, rank_t r, typename S>
-basic_host_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_host_tensor_ref<R, r, S> &t, int k)
-{
-    return internal::chunker<basic_host_tensor_ref, R, r, S>()(t, k);
-}
-
-template <typename R, rank_t r, typename S>
-basic_host_tensor_view<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_host_tensor_view<R, r, S> &t, int k)
-{
-    return internal::chunker<basic_host_tensor_view, R, r, S>()(t, k);
-}
-
-template <typename R, rank_t r, typename S>
-basic_cuda_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_cuda_tensor<R, r, S> &t, int k)
-{
-    return internal::chunker<basic_cuda_tensor_ref, R, r, S>()(t, k);
-}
-
-template <typename R, rank_t r, typename S>
-basic_cuda_tensor_ref<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_cuda_tensor_ref<R, r, S> &t, int k)
-{
-    return internal::chunker<basic_cuda_tensor_ref, R, r, S>()(t, k);
-}
-
-template <typename R, rank_t r, typename S>
-basic_cuda_tensor_view<R, r + 1, typename super_shape<S>::type>
-chunk(const basic_cuda_tensor_view<R, r, S> &t, int k)
-{
-    return internal::chunker<basic_cuda_tensor_view, R, r, S>()(t, k);
-}
-
 }  // namespace internal
 
 using internal::chunk;
-
 }  // namespace ttl

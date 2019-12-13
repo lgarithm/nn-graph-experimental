@@ -5,6 +5,7 @@ AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
+# AlwaysBreakTemplateDeclarations: true
 
 IndentPPDirectives: AfterHash
 IndentWidth: 4
