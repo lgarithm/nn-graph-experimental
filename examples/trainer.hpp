@@ -1,6 +1,6 @@
 #pragma once
-#include <nn/bits/ops/chunk.hpp>
 #include <ttl/range>
+#include <ttl/tensor>
 
 class simple_data_iterator
 {
