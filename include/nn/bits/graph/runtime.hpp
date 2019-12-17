@@ -47,17 +47,15 @@ class runtime
   public:
 };
 
-template <typename device> class basic_runtime : public runtime
+template <typename D> class basic_runtime : public runtime
 {
   public:
-    using D = typename ttl_device<device>::type;
-
     template <typename R, ttl::rank_t r> using ref_t = ttl::tensor_ref<R, r, D>;
     template <typename R, ttl::rank_t r>
     using view_t = ttl::tensor_view<R, r, D>;
 
   protected:
-    variable_manager<device> vm_;
+    variable_manager<D> vm_;
 
     std::map<key_t, variable *> vars_;
     std::map<key_t, reference *> binds_;
@@ -65,9 +63,9 @@ template <typename device> class basic_runtime : public runtime
     template <typename R, ttl::rank_t r> ref_t<R, r> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
-            return binds_.at(key)->template as<R, r, device>().get();
+            return binds_.at(key)->template as<R, r, D>().get();
         } else {
-            return vars_.at(key)->template as<R, r, device>().get();
+            return vars_.at(key)->template as<R, r, D>().get();
         }
     }
 
@@ -97,7 +95,7 @@ template <typename device> class basic_runtime : public runtime
     template <typename R, ttl::rank_t r>
     void bind(key_t key, const ref_t<R, r> &t)
     {
-        binds_.at(key)->template as<R, r, device>().bind(t);
+        binds_.at(key)->template as<R, r, D>().bind(t);
     }
 
     void unbind(key_t key) { binds_.at(key)->unbind(); }
@@ -117,7 +115,7 @@ template <typename device> class basic_runtime : public runtime
     {
         const auto ys = tuple_map(_get_ref(this), outputs);
         const auto xs = tuple_map(_get_view(this), inputs);
-        apply_if<device>(f, std::tuple_cat(ys, xs));
+        apply_if<D>(f, std::tuple_cat(ys, xs));
     }
 
     // debug

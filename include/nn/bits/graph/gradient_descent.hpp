@@ -9,15 +9,12 @@ namespace nn::graph::internal
 template <typename R, ttl::rank_t r> class var_node;
 class base_var_node;
 
-template <typename device> class gradient_descent
+template <typename D> class gradient_descent
 {
-    using D = typename ttl_device<device>::type;
-
     template <typename R, ttl::rank_t r> using tensor = ttl::tensor<R, r, D>;
 
-    using RT = basic_runtime<device>;
-
-    using axpy = typename nn::for_device<nn::ops::axpy, device>::type;
+    using RT = basic_runtime<D>;
+    using axpy = typename nn::for_device<nn::ops::axpy, D>::type;
 
   public:
     template <typename R, ttl::rank_t r>
@@ -27,8 +24,8 @@ template <typename device> class gradient_descent
     {
         return [=](const RT &rt) {
             for (const auto g : gs) {
-                apply_if<device>(
-                    axpy(), std::make_tuple(rt.template get_ref<R, r>(v),
+                apply_if<D>(axpy(),
+                            std::make_tuple(rt.template get_ref<R, r>(v),
                                             rt.template get_view<R, 0>(lr),
                                             rt.template get_view<R, r>(g),
                                             rt.template get_view<R, r>(v)));

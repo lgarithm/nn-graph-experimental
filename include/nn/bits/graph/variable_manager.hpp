@@ -28,10 +28,9 @@ class variable
     virtual operator std::string() const = 0;
 };
 
-template <typename R, ttl::rank_t r, typename device>
+template <typename R, ttl::rank_t r, typename D>
 class tensor_variable : public variable
 {
-    using D = typename ttl_device<device>::type;
     using T = ttl::tensor<R, r, D>;
     using Ref = ttl::tensor_ref<R, r, D>;
 
@@ -64,10 +63,9 @@ class reference
     }
 };
 
-template <typename R, ttl::rank_t r, typename device>
+template <typename R, ttl::rank_t r, typename D>
 class tensor_reference : public reference
 {
-    using D = typename ttl_device<device>::type;
     using Ref = ttl::tensor_ref<R, r, D>;
 
     const ttl::shape<r> shape_;
@@ -94,25 +92,25 @@ class tensor_reference : public reference
     Ref get() const { return value_.value(); }
 };
 
-template <typename device> class variable_manager
+template <typename D> class variable_manager
 {
     std::vector<std::unique_ptr<variable>> variables_;
     std::vector<std::unique_ptr<reference>> references_;
 
   public:
     template <typename R, ttl::rank_t r>
-    tensor_variable<R, r, device> *create_tensor(const ttl::shape<r> &shape)
+    tensor_variable<R, r, D> *create_tensor(const ttl::shape<r> &shape)
     {
-        auto v = new tensor_variable<R, r, device>(shape);
+        auto v = new tensor_variable<R, r, D>(shape);
         variables_.push_back(std::unique_ptr<variable>(v));
         return v;
     }
 
     template <typename R, ttl::rank_t r>
-    tensor_reference<R, r, device> *
+    tensor_reference<R, r, D> *
     create_tensor_reference(const ttl::shape<r> &shape)
     {
-        auto tr = new tensor_reference<R, r, device>(shape);
+        auto tr = new tensor_reference<R, r, D>(shape);
         references_.push_back(std::unique_ptr<reference>(tr));
         return tr;
     }
