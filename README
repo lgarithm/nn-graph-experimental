@@ -2,6 +2,6 @@ Neural Network Graph
 
 stdnn-graph is an experimental library for computation graph build on top of
 
-- [stdtensor](<https://github.com/lgarithm/stdtensor>)
+- [stdtensor](https://github.com/lgarithm/stdtensor)
 - [stdnn-ops](https://github.com/lgarithm/stdnn-ops)
 - [stdnn-ops-cuda](https://github.com/lgarithm/stdnn-ops-cuda) (will open source soon!)
