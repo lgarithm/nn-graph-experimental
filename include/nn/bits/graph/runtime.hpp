@@ -5,8 +5,6 @@
 #include <ttl/show_size>
 
 #include <nn/bits/graph/apply.hpp>
-#include <nn/bits/graph/devices/cpu.hpp>
-#include <nn/bits/graph/devices/nvidia_gpu.hpp>
 #include <nn/bits/graph/variable_manager.hpp>
 #include <nn/bits/tuple.hpp>
 
@@ -52,11 +50,11 @@ class runtime
 template <typename device> class basic_runtime : public runtime
 {
   public:
-    template <typename R, ttl::rank_t r>
-    using ref_t = typename device::template reference_type<R, r>;
+    using D = typename ttl_device<device>::type;
 
+    template <typename R, ttl::rank_t r> using ref_t = ttl::tensor_ref<R, r, D>;
     template <typename R, ttl::rank_t r>
-    using view_t = typename device::template view_type<R, r>;
+    using view_t = ttl::tensor_view<R, r, D>;
 
   protected:
     variable_manager<device> vm_;

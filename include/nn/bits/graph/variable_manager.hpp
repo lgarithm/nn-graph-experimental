@@ -28,11 +28,12 @@ class variable
     virtual operator std::string() const = 0;
 };
 
-template <typename R, ttl::rank_t r, typename D>
+template <typename R, ttl::rank_t r, typename device>
 class tensor_variable : public variable
 {
-    using T = typename D::template tensor_type<R, r>;
-    using Ref = typename D::template reference_type<R, r>;
+    using D = typename ttl_device<device>::type;
+    using T = ttl::tensor<R, r, D>;
+    using Ref = ttl::tensor_ref<R, r, D>;
 
     T value_;
 
@@ -63,10 +64,11 @@ class reference
     }
 };
 
-template <typename R, ttl::rank_t r, typename D>
+template <typename R, ttl::rank_t r, typename device>
 class tensor_reference : public reference
 {
-    using Ref = typename D::template reference_type<R, r>;
+    using D = typename ttl_device<device>::type;
+    using Ref = ttl::tensor_ref<R, r, D>;
 
     const ttl::shape<r> shape_;
 
@@ -115,5 +117,4 @@ template <typename device> class variable_manager
         return tr;
     }
 };
-
 }  // namespace nn::graph::internal
