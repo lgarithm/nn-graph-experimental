@@ -12,12 +12,14 @@ namespace nn::graph::internal
 {
 class base_var_node;
 
-template <typename RT> struct _get_ref {
+template <typename RT>
+struct _get_ref {
     const RT *rt;
 
     _get_ref(const RT *rt) : rt(rt) {}
 
-    template <typename Node> auto operator()(const Node *key) const
+    template <typename Node>
+    auto operator()(const Node *key) const
     {
         using R = typename Node::value_type;
         constexpr auto r = Node::rank;
@@ -25,12 +27,14 @@ template <typename RT> struct _get_ref {
     }
 };
 
-template <typename RT> struct _get_view {
+template <typename RT>
+struct _get_view {
     const RT *rt;
 
     _get_view(const RT *rt) : rt(rt) {}
 
-    template <typename Node> auto operator()(const Node *key) const
+    template <typename Node>
+    auto operator()(const Node *key) const
     {
         using R = typename Node::value_type;
         constexpr auto r = Node::rank;
@@ -47,20 +51,17 @@ class runtime
   public:
 };
 
-template <typename D> class basic_runtime : public runtime
+template <typename D>
+class basic_runtime : public runtime
 {
-  public:
-    template <typename R, ttl::rank_t r> using ref_t = ttl::tensor_ref<R, r, D>;
-    template <typename R, ttl::rank_t r>
-    using view_t = ttl::tensor_view<R, r, D>;
-
   protected:
     variable_manager<D> vm_;
 
     std::map<key_t, variable *> vars_;
     std::map<key_t, reference *> binds_;
 
-    template <typename R, ttl::rank_t r> ref_t<R, r> get(key_t key) const
+    template <typename R, ttl::rank_t r>
+    ttl::tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
             return binds_.at(key)->template as<R, r, D>().get();
@@ -93,19 +94,21 @@ template <typename D> class basic_runtime : public runtime
     }
 
     template <typename R, ttl::rank_t r>
-    void bind(key_t key, const ref_t<R, r> &t)
+    void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
     {
         binds_.at(key)->template as<R, r, D>().bind(t);
     }
 
     void unbind(key_t key) { binds_.at(key)->unbind(); }
 
-    template <typename R, ttl::rank_t r> ref_t<R, r> get_ref(key_t key) const
+    template <typename R, ttl::rank_t r>
+    ttl::tensor_ref<R, r, D> get_ref(key_t key) const
     {
         return get<R, r>(key);
     }
 
-    template <typename R, ttl::rank_t r> view_t<R, r> get_view(key_t key) const
+    template <typename R, ttl::rank_t r>
+    ttl::tensor_view<R, r, D> get_view(key_t key) const
     {
         return get<R, r>(key);
     }
