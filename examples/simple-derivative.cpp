@@ -1,21 +1,21 @@
 #include <nn/graph>
-#include <nn/ops>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "utils.hpp"
 
 int main()
 {
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
 
     auto x = b.covar<float>("x", ttl::make_shape());
     auto y = b.covar<float>("y", ttl::make_shape());
-    auto z = b.invoke<float>("z", nn::ops::add(), x, y);
+    auto z = b.invoke<float>("z", ttl::nn::ops::add(), x, y);
 
     auto gvs = b.gradients(z);
     auto gs = firsts(gvs);
 
-    nn::graph::runtime rt;
+    ttl::nn::graph::runtime rt;
     b.build(rt);
     {
         ttl::fill(x->get_ref(rt), static_cast<float>(1.0));

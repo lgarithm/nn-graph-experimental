@@ -1,11 +1,11 @@
 
 #include <tuple>
 
-#include <nn/ops>
+#include <ttl/nn/ops>
 
 #include <nn/bits/graph/builder.hpp>
 
-namespace nn::graph::layers
+namespace ttl::nn::graph::layers
 {
 template <typename R, typename builder>
 auto dense(builder &b, const nn::graph::internal::var_node<R, 2> *t, int logits)
@@ -20,4 +20,4 @@ auto dense(builder &b, const nn::graph::internal::var_node<R, 2> *t, int logits)
         b.template invoke<R>("biased", nn::ops::matmul(), t, weight), bias);
     return std::make_tuple(l, weight, bias);
 }
-}  // namespace nn::graph::layers
+}  // namespace ttl::nn::graph::layers

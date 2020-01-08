@@ -5,10 +5,10 @@
  */
 
 #include <nn/graph>
-#include <nn/ops>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
-auto simple_auto(nn::graph::builder &b)
+auto simple_auto(ttl::nn::graph::builder &b)
 {
     const int n = 10;
 
@@ -16,9 +16,9 @@ auto simple_auto(nn::graph::builder &b)
     auto y = b.var<float>("y", ttl::make_shape(n));
     auto z = b.var<float>("z", ttl::make_shape(n));
 
-    auto u = b.invoke<float>("u", nn::ops::add(), x, y);
-    auto v = b.invoke<float>("v", nn::ops::add(), y, z);
-    auto w = b.invoke<float>("w", nn::ops::add(), u, v);
+    auto u = b.invoke<float>("u", ttl::nn::ops::add(), x, y);
+    auto v = b.invoke<float>("v", ttl::nn::ops::add(), y, z);
+    auto w = b.invoke<float>("w", ttl::nn::ops::add(), u, v);
 
     auto gvs = b.gradients(w);
     for (auto [g, v] : gvs) {
@@ -29,9 +29,9 @@ auto simple_auto(nn::graph::builder &b)
 
 void example()
 {
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
     simple_auto(b);
-    nn::graph::runtime rt;
+    ttl::nn::graph::runtime rt;
     b.build(rt);
 }
 

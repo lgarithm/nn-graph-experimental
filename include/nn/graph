@@ -4,7 +4,7 @@
 #include <nn/bits/graph/optimizer.hpp>
 #include <nn/bits/graph/runtime.hpp>
 
-namespace nn::graph
+namespace ttl::nn::graph
 {
 using internal::cpu_runtime;
 using internal::gpu_runtime;
@@ -20,4 +20,4 @@ using internal::optimizer;
 using internal::cpu;
 using internal::nvidia_gpu;
 using gpu = nvidia_gpu;
-}  // namespace nn::graph
+}  // namespace ttl::nn::graph

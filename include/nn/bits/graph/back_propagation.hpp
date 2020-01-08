@@ -2,17 +2,20 @@
 #include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/graph/operator.hpp>
-#include <nn/bits/ops/init.hpp>
+#include <ttl/nn/bits/ops/init.hpp>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
-template <bool> struct grad_init;
+template <bool>
+struct grad_init;
 
-template <> struct grad_init<true> {
+template <>
+struct grad_init<true> {
     using type = nn::ops::uniform_distribution;
 };
 
-template <> struct grad_init<false> {
+template <>
+struct grad_init<false> {
     using type = nn::ops::ones;
 };
 
@@ -149,4 +152,4 @@ class forward_func_node : public func_node<F, Node, Nodes...>
     }
 };
 
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

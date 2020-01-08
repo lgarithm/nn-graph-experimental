@@ -1,7 +1,7 @@
 #include <experimental/zip>
-#include <nn/experimental/datasets>
 #include <nn/graph>
-#include <nn/ops>
+#include <ttl/nn/experimental/datasets>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "mnist.hpp"
@@ -17,9 +17,9 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
 {
     TRACE_SCOPE(__func__);
 
-    using nn::graph::layers::classification_output;
-    using nn::graph::layers::cnn;
-    using nn::graph::layers::dense;
+    using ttl::nn::graph::layers::classification_output;
+    using ttl::nn::graph::layers::cnn;
+    using ttl::nn::graph::layers::dense;
 
     const auto [height, width, channel] = image_shape.dims();
     auto images = b.template var<float>(
@@ -29,8 +29,8 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
     auto [l1, w1, b1] = cnn(b, images, b.shape(3, 3), 32);
     auto [l2, w2, b2] = cnn(b, l1, b.shape(3, 3), 32);
 
-    auto cnn_flat =
-        b.template invoke<float>("cnn_flat", nn::ops::copy_flatten<1, 3>(), l2);
+    auto cnn_flat = b.template invoke<float>(
+        "cnn_flat", ttl::nn::ops::copy_flatten<1, 3>(), l2);
 
     auto [l_out, w3, b3] = dense(b, cnn_flat, logits);
     auto [loss, accuracy] = classification_output(b, l_out, labels);
@@ -41,14 +41,14 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
 void cnn_cpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
     const auto [xs, y_s, loss, accuracy] =
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
-    nn::graph::internal::optimizer opt;
+    ttl::nn::graph::internal::optimizer opt;
     auto f = opt.minimize(b, loss, 0.01);
 
-    nn::graph::runtime rt;
+    ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
 
@@ -67,7 +67,8 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
                 test_labels, xs, y_s, f, accuracy, do_test);
 }
 
-template <typename T> auto make_cuda_tensor_from(const T &t)
+template <typename T>
+auto make_cuda_tensor_from(const T &t)
 {
     ttl::cuda_tensor<typename T::value_type, T::rank> c(t.shape());
     ttl::copy(ref(c), t);
@@ -77,14 +78,14 @@ template <typename T> auto make_cuda_tensor_from(const T &t)
 void cnn_gpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
-    nn::graph::gpu_builder b;
+    ttl::nn::graph::gpu_builder b;
     const auto [xs, y_s, loss, accuracy] =
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
-    nn::graph::internal::optimizer opt;
+    ttl::nn::graph::internal::optimizer opt;
     auto f = opt.minimize(b, loss, 0.01);
 
-    nn::graph::gpu_runtime rt;
+    ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
 
@@ -99,10 +100,10 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     auto test_images_cpu = prepro4(test.images);
     auto test_labels_cpu = prepro(test.labels);
 
-    auto images = make_cuda_tensor_from(view(images_cpu));
-    auto labels = make_cuda_tensor_from(view(labels_cpu));
-    auto test_images = make_cuda_tensor_from(view(test_images_cpu));
-    auto test_labels = make_cuda_tensor_from(view(test_labels_cpu));
+    auto images = make_cuda_tensor_from(ttl::view(images_cpu));
+    auto labels = make_cuda_tensor_from(ttl::view(labels_cpu));
+    auto test_images = make_cuda_tensor_from(ttl::view(test_images_cpu));
+    auto test_labels = make_cuda_tensor_from(ttl::view(test_labels_cpu));
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
                 test_labels, xs, y_s, f, accuracy, do_test);

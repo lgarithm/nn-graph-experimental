@@ -1,13 +1,14 @@
 // #define NN_GRAPG_TRACE 1
 
 #include <nn/graph>
-#include <nn/ops>
 #include <ttl/copy>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "trace.hpp"
 
-template <typename T> auto make_tensor_like(const T &t)
+template <typename T>
+auto make_tensor_like(const T &t)
 {
     return ttl::tensor<typename T::value_type, T::rank>(t.shape());
 }

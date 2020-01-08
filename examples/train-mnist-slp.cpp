@@ -1,8 +1,8 @@
-#include <nn/experimental/datasets>
 #include <nn/graph>
-#include <nn/ops>
 #include <ttl/algorithm>
 #include <ttl/copy>
+#include <ttl/nn/experimental/datasets>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "mnist.hpp"
@@ -16,8 +16,8 @@ template <typename builder>
 auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
 {
     TRACE_SCOPE(__func__);
-    using nn::graph::layers::classification_output;
-    using nn::graph::layers::dense;
+    using ttl::nn::graph::layers::classification_output;
+    using ttl::nn::graph::layers::dense;
     auto images =
         b.template var<float>("images", b.shape(batch_size, input_size));
     auto labels =
@@ -30,14 +30,14 @@ auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
 void slp_cpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    nn::graph::optimizer opt;
+    ttl::nn::graph::optimizer opt;
     auto f = opt.minimize(b, loss, 0.5);
 
-    nn::graph::runtime rt;
+    ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
 
@@ -61,7 +61,8 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
                 test_labels, xs, y_s, f, accuracy);
 }
 
-template <typename T> auto make_cuda_tensor_from(const T &t)
+template <typename T>
+auto make_cuda_tensor_from(const T &t)
 {
     ttl::cuda_tensor<typename T::value_type, T::rank> c(t.shape());
     ttl::copy(ref(c), t);
@@ -71,14 +72,14 @@ template <typename T> auto make_cuda_tensor_from(const T &t)
 void slp_gpu(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
-    nn::graph::gpu_builder b;
+    ttl::nn::graph::gpu_builder b;
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    nn::graph::optimizer opt;
+    ttl::nn::graph::optimizer opt;
     auto f = opt.minimize(b, loss, 0.5);
 
-    nn::graph::gpu_runtime rt;
+    ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
 

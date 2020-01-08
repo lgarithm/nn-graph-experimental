@@ -1,7 +1,7 @@
 #pragma once
 #include <set>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 class node;
 
@@ -21,4 +21,4 @@ class execution
 
     bool is_done(key_t key) const { return done_.count(key) > 0; }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

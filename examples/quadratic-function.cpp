@@ -1,18 +1,18 @@
 #include <nn/graph>
-#include <nn/ops>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 void example1()
 {
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
 
-    auto x = b.covar<float>(ttl::make_shape(), nn::ops::ones());
-    auto y = b.invoke(nn::ops::mul(), x, x);
+    auto x = b.covar<float>(ttl::make_shape(), ttl::nn::ops::ones());
+    auto y = b.invoke(ttl::nn::ops::mul(), x, x);
 
-    nn::graph::optimizer opt;
+    ttl::nn::graph::optimizer opt;
     auto train_step = opt.minimize(b, y);
 
-    nn::graph::runtime rt;
+    ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
 
