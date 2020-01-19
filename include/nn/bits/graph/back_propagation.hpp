@@ -11,7 +11,7 @@ struct grad_init;
 
 template <>
 struct grad_init<true> {
-    using type = nn::ops::uniform_distribution;
+    using type = nn::ops::uniform_constant;
 };
 
 template <>

@@ -68,22 +68,22 @@ namespace ttl::nn
 {
 template <>
 struct cuda_op<ttl::nn::ops::zeros> {
-    using type = ttl::nn::cuda::ops::zeros;
+    using type = ttl::nn::ops::zeros;
 };
 
 template <>
 struct cuda_op<ttl::nn::ops::ones> {
-    using type = ttl::nn::cuda::ops::ones;
+    using type = ttl::nn::ops::ones;
 };
 
 template <typename R>
 struct cuda_op<ttl::nn::ops::constant<R>> {
-    using type = ttl::nn::cuda::ops::constant<R>;
+    using type = ttl::nn::ops::constant<R>;
 };
 
 template <>
-struct cuda_op<ttl::nn::ops::uniform_distribution> {
-    using type = ttl::nn::cuda::ops::uniform_distribution;
+struct cuda_op<ttl::nn::ops::uniform_constant> {
+    using type = ttl::nn::ops::uniform_constant;
 };
 
 template <ttl::rank_t... rs>
