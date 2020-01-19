@@ -1,8 +1,8 @@
 #pragma once
 #include <map>
 
+#include <ttl/experimental/show_size>
 #include <ttl/shape>
-#include <ttl/show_size>
 
 #include <nn/bits/graph/apply.hpp>
 #include <nn/bits/graph/variable_manager.hpp>
