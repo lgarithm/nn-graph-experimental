@@ -66,7 +66,6 @@ struct cuda_op {
 
 namespace ttl::nn
 {
-
 template <>
 struct cuda_op<ttl::nn::ops::zeros> {
     using type = ttl::nn::cuda::ops::zeros;
@@ -99,12 +98,12 @@ struct cuda_op<ttl::nn::ops::grad::copy_flatten<rs...>> {
 
 template <>
 struct cuda_op<ttl::nn::ops::add> {
-    using type = ttl::nn::cuda::ops::add;
+    using type = ttl::nn::ops::add;
 };
 
 template <>
 struct cuda_op<ttl::nn::ops::mul> {
-    using type = ttl::nn::cuda::ops::mul;
+    using type = ttl::nn::ops::mul;
 };
 
 template <>
@@ -135,7 +134,7 @@ struct cuda_op<ttl::nn::ops::add_bias<image_order>> {
 
 template <>
 struct cuda_op<ttl::nn::ops::softmax> {
-    using type = ttl::nn::cuda::ops::softmax;
+    using type = ttl::nn::ops::softmax;
 };
 
 template <>
@@ -150,7 +149,7 @@ struct cuda_op<ttl::nn::ops::similarity> {
 
 template <>
 struct cuda_op<ttl::nn::ops::xentropy> {
-    using type = ttl::nn::cuda::ops::xentropy;
+    using type = ttl::nn::ops::xentropy;
 };
 
 template <int p>
