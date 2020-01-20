@@ -117,9 +117,9 @@ struct cuda_op<ttl::nn::ops::grad::mul<p>> {
     using type = ttl::nn::cuda::ops::grad::mul<p>;
 };
 
-template <typename E>
-struct cuda_op<ttl::nn::ops::matmul_<E>> {
-    using type = ttl::nn::cuda::ops::matmul;
+template <>
+struct cuda_op<ttl::nn::ops::matmul> {
+    using type = ttl::nn::ops::matmul;
 };
 
 template <>
@@ -140,12 +140,12 @@ struct cuda_op<ttl::nn::ops::softmax> {
 
 template <>
 struct cuda_op<ttl::nn::ops::argmax> {
-    using type = ttl::nn::cuda::ops::argmax;
+    using type = ttl::nn::ops::argmax;
 };
 
 template <>
 struct cuda_op<ttl::nn::ops::similarity> {
-    using type = ttl::nn::cuda::ops::similarity;
+    using type = ttl::nn::ops::similarity;
 };
 
 template <>
