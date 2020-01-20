@@ -63,6 +63,7 @@ struct cuda_op {
 
 #    include <ttl/nn/cuda_gradients>
 #    include <ttl/nn/cuda_ops>
+#    include <ttl/nn/kernels/cuda>
 
 namespace ttl::nn
 {
@@ -108,7 +109,7 @@ struct cuda_op<ttl::nn::ops::mul> {
 
 template <>
 struct cuda_op<ttl::nn::ops::axpy> {
-    using type = ttl::nn::cuda::ops::axpy;
+    using type = ttl::nn::ops::axpy;
 };
 
 template <int p>
