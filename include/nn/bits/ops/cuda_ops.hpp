@@ -122,15 +122,14 @@ struct cuda_op<ttl::nn::ops::matmul> {
     using type = ttl::nn::ops::matmul;
 };
 
-template <>
-struct cuda_op<ttl::nn::ops::conv<ttl::nn::ops::nhwc, ttl::nn::ops::rscd>> {
-    using type =
-        ttl::nn::cuda::ops::conv<ttl::nn::ops::nhwc, ttl::nn::ops::rscd>;
+template <typename image_order, typename filter_order>
+struct cuda_op<ttl::nn::ops::conv<image_order, filter_order>> {
+    using type = ttl::nn::ops::conv<image_order, filter_order>;
 };
 
 template <typename image_order>
 struct cuda_op<ttl::nn::ops::add_bias<image_order>> {
-    using type = ttl::nn::cuda::ops::add_bias<image_order>;
+    using type = ttl::nn::ops::add_bias<image_order>;
 };
 
 template <>
