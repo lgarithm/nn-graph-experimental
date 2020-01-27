@@ -11,6 +11,7 @@
 #include <nn/bits/graph/operator.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/gradients>
+#include <ttl/cuda_tensor>
 #include <ttl/tensor>
 
 namespace ttl::nn::graph::internal

@@ -2,7 +2,7 @@
 #include <nn/bits/graph/apply.hpp>
 #include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/runtime.hpp>
-#include <ttl/nn/bits/ops/utility.hpp>
+#include <ttl/nn/bits/ops/blas.hpp>
 
 namespace ttl::nn::graph::internal
 {
