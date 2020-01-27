@@ -4,16 +4,16 @@
 
 TEST(builder_test, test1)
 {
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
     b.var<float>("w", ttl::make_shape(100, 10));
     b.var<float>("b", ttl::make_shape(10));
 }
 
 TEST(builder_test, test_gradients)
 {
-    nn::graph::builder b;
+    ttl::nn::graph::builder b;
     auto x = b.var<float>("x", ttl::make_shape());
     auto y = b.var<float>("y", ttl::make_shape());
-    auto z = b.invoke<float>("z", nn::ops::add(), x, y);
+    auto z = b.invoke<float>("z", ttl::nn::ops::add(), x, y);
     b.gradients(z);
 }

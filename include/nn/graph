@@ -1,4 +1,8 @@
 #pragma once
+// FIXME: move to upstream
+#include <ttl/nn/bits/kernels/cpu/elementary.hpp>
+#include <ttl/nn/bits/kernels/cpu/init.hpp>
+
 #include <nn/bits/graph/builder.hpp>
 #include <nn/bits/graph/device.hpp>
 #include <nn/bits/graph/optimizer.hpp>
