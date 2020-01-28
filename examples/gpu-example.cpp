@@ -57,7 +57,7 @@ void graph_example()
     {
         auto v = z->get_view(rt);
         ttl::tensor<int, 1> zz(z->shape());
-        v.to_host(zz.data());
+        ttl::copy(ttl::ref(zz), v);
         std::cerr << "z[0] = " << zz.data()[0] << std::endl;
     }
 }
