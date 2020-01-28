@@ -44,11 +44,15 @@ class simple_trainer
     {
         std::cerr << "batch size :: " << batch_size_ << std::endl;
         simple_data_iterator train_epoch(batch_size_);
+        int step = 0;
         for (auto epoch : ttl::range(epoches_)) {
             train_epoch(images, labels, [&](int idx, auto xs, auto y_s) {
+                ++step;
+                printf("step: %4d:\n", step);
                 train(idx, xs, y_s);
                 if (do_test_) { test(epoch, idx); }
             });
         }
+        test(epoches_, 0);
     }
 };

@@ -12,7 +12,7 @@
 ttl::tensor<float, 2> prepro(const ttl::tensor_view<uint8_t, 1> &t)
 {
     const int k = 10;
-    ttl::tensor<float, 2> y(t.shape().size(), k);
+    ttl::tensor<float, 2> y(t.size(), k);
     (ttl::nn::ops::onehot(k))(ref(y), t);
     return y;
 }
@@ -20,7 +20,7 @@ ttl::tensor<float, 2> prepro(const ttl::tensor_view<uint8_t, 1> &t)
 // images -> [batch, h * w]
 ttl::tensor<float, 2> prepro2(const ttl::tensor_view<uint8_t, 3> &t)
 {
-    const auto [n, h, w] = t.shape().dims();
+    const auto [n, h, w] = t.dims();
     ttl::tensor<float, 2> y(n, h * w);
     std::transform(t.data(), t.data_end(), y.data(),
                    [](uint8_t p) -> float { return p / 255.0; });
@@ -30,7 +30,7 @@ ttl::tensor<float, 2> prepro2(const ttl::tensor_view<uint8_t, 3> &t)
 // images -> [batch, h, w, 1]
 ttl::tensor<float, 4> prepro4(const ttl::tensor_view<uint8_t, 3> &t)
 {
-    const auto [n, h, w] = t.shape().dims();
+    const auto [n, h, w] = t.dims();
     ttl::tensor<float, 4> y(n, h, w, 1);
     std::transform(t.data(), t.data_end(), y.data(),
                    [](uint8_t p) -> float { return p / 255.0; });
@@ -72,17 +72,16 @@ void train_mnist(int epoches, int batch_size,                           //
     TRACE_STMT(rt.debug());
 
     simple_trainer run_train(epoches, batch_size, do_test);
-    run_train(
-        images, labels,
-        [&](int idx, auto xs_data, auto y_s_data) {
-            TRACE_SCOPE("train batch");
-            rt.bind(xs, xs_data);
-            rt.bind(y_s, y_s_data);
-            b.run(rt, train_step);
-        },
-        [&](int epoch, int step) {
-            const auto acc = test_all(b, rt, batch_size, test_images,
-                                      test_labels, xs, y_s, accuracy);
-            show_accuracy(acc, epoch + 1, step + 1);
-        });
+    run_train(images, labels,
+              [&](int idx, auto xs_data, auto y_s_data) {
+                  TRACE_SCOPE("train batch");
+                  rt.bind(xs, xs_data);
+                  rt.bind(y_s, y_s_data);
+                  b.run(rt, train_step);
+              },
+              [&](int epoch, int step) {
+                  const auto acc = test_all(b, rt, batch_size, test_images,
+                                            test_labels, xs, y_s, accuracy);
+                  show_accuracy(acc, epoch + 1, step + 1);
+              });
 }

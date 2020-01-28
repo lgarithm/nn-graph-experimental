@@ -27,7 +27,8 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
     auto labels =
         b.template var<float>("onehot-labels", b.shape(batch_size, logits));
     auto [l1, w1, b1] = cnn(b, images, b.shape(3, 3), 32);
-    auto [l2, w2, b2] = cnn(b, l1, b.shape(3, 3), 32);
+    auto l2 = b.template invoke<float>("conv_act", ttl::nn::ops::relu(), l1);
+    // auto [l2, w2, b2] = cnn(b, l1, b.shape(3, 3), 32);
 
     auto cnn_flat = b.template invoke<float>(
         "cnn_flat", ttl::nn::ops::copy_flatten<1, 3>(), l2);
@@ -46,7 +47,7 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
     ttl::nn::graph::internal::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.01);
+    auto f = opt.minimize(b, loss, 0.1);
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -83,7 +84,7 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
     ttl::nn::graph::internal::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.01);
+    auto f = opt.minimize(b, loss, 0.1);
 
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
@@ -112,9 +113,9 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
 int main(int argc, char *argv[])
 {
     TRACE_SCOPE(__func__);
-    const int batch_size = 1000;
-    const int epoches = 1;
-    const bool do_test = true;
+    const int batch_size = 100;
+    const int epoches = 3;
+    const bool do_test = false;
     if (argc > 1 && std::string(argv[1]) == "gpu") {
         cnn_gpu(batch_size, epoches, do_test);
     } else {

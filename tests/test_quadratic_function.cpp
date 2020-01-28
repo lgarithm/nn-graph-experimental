@@ -6,9 +6,8 @@ TEST(quad_test, test1)
 {
     ttl::nn::graph::builder b;
 
-    auto x =
-        b.template covar<float>("x", ttl::make_shape(), ttl::nn::ops::ones());
-    auto y = b.template invoke<float>("y", ttl::nn::ops::mul(), x, x);
+    auto x = b.covar<float>("x", ttl::make_shape(), ttl::nn::ops::ones());
+    auto y = b.invoke<float>("y", ttl::nn::ops::mul(), x, x);
 
     ttl::nn::graph::optimizer opt;
     auto f = opt.minimize(b, y);
