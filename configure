@@ -65,23 +65,12 @@ parse_args() {
     done
 }
 
-CMAKE_FLAGS=
+. ./auto/cmake
 
-add_cmake_flag() {
-    echo "usinig $1=$2"
-    CMAKE_FLAGS="$CMAKE_FLAGS -D$1=$2"
-}
-
-pass_cmake_flag_from_env() {
-    local name=$1
-    local env_key=$2
-    if [ -z ${env_key} ]; then
-        env_key=$name
-    fi
-    local val=$(eval echo \$$env_key)
-    if [ ! -z "$val" ]; then
-        add_cmake_flag $name $val
-    fi
+add_cmake_prefixes() {
+    add_cmake_prefix $HOME/local
+    add_cmake_prefix $HOME/local/gtest
+    add_cmake_prefix $HOME/local/openblas
 }
 
 add_cmake_flags() {
@@ -117,32 +106,15 @@ add_cmake_flags() {
     pass_cmake_flag_from_env STDTENSOR_GIT_URL
     pass_cmake_flag_from_env STDNN_OPS_GIT_URL
 
-    add_cmake_flag STDTENSOR_GIT_TAG $(head -n 1 ./deps/stdtensor)
-    add_cmake_flag STDNN_OPS_GIT_TAG $(head -n 1 ./deps/stdnn-ops)
+    add_cmake_flag STDTENSOR_GIT_TAG $(get_dep stdtensor)
+    add_cmake_flag STDNN_OPS_GIT_TAG $(get_dep stdnn-ops)
 
     if [ ${ENABLE_CUDA} -eq 1 ]; then
         pass_cmake_flag_from_env STDNN_OPS_CUDA_GIT_URL
         add_cmake_flag CUDA_TOOLKIT_ROOT_DIR $CUDA_HOME
         add_cmake_flag CMAKE_CUDA_COMPILER $CUDA_HOME/bin/nvcc
-        add_cmake_flag STDNN_OPS_CUDA_GIT_TAG $(head -n 1 ./deps/stdnn-ops-cuda)
+        add_cmake_flag STDNN_OPS_CUDA_GIT_TAG $(get_dep stdnn-ops-cuda)
     fi
-}
-
-cleanup_cmake_cache() {
-    if [ -f CMakeCache.txt ]; then
-        rm CMakeCache.txt
-    fi
-    if [ -d 3rdparty ]; then
-        for cmake_cache in $(find 3rdparty/ | grep CMakeCache.txt); do
-            rm $cmake_cache
-        done
-    fi
-}
-
-log_config_var() {
-    local name=$1
-    local val=$(eval echo \$$name)
-    echo "$name=$val"
 }
 
 main() {
@@ -160,9 +132,7 @@ main() {
         echo "TODO: support build without cmake"
         exit 1
     else
-        add_cmake_flags
-        cleanup_cmake_cache
-        cmake . $CMAKE_FLAGS
+        config_cmake
     fi
 }
 

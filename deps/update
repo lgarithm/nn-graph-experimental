@@ -1,10 +1,18 @@
 #!/bin/sh
 set -e
+
 cd $(dirname $0)
 
-get_commit() {
-    git ls-remote $1 -t $2 | awk '{print $1}'
+latest() {
+    local name=$1
+    local tag=$2
+    local repo=$3
+    # local url=https://github.com/$repo
+    local url=git@github.com:$repo.git
+    local commit=$(git ls-remote $url $tag | awk '{print $1}')
+    echo "$commit $tag" | tee $name
 }
 
-get_commit https://github.com/lgarithm/stdtensor master >stdtensor
-get_commit https://github.com/lgarithm/stdnn-ops master >stdnn-ops
+latest stdtensor dev-0.6.0 lgarithm/stdtensor
+latest stdnn-ops grad-kernel lgarithm/stdnn-ops
+latest stdnn-ops-cuda kernel lgarithm/stdnn-ops-cuda
