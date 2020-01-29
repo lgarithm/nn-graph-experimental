@@ -21,18 +21,20 @@ jobs:
     - name: install stdtensor
       run: |
         . ./auto/cmake
+        commit=$(get_dep stdtensor)
         git clone https://github.com/lgarithm/stdtensor.git
         cd stdtensor
-        git checkout $(get_dep stdtensor)
+        git checkout $commit
         ./configure --prefix=$HOME/local
         make install
 
     - name: install stdnn-ops
       run: |
         . ./auto/cmake
+        commit=$(get_dep stdnn-ops)
         git clone https://github.com/lgarithm/stdnn-ops.git
         cd stdnn-ops
-        git checkout $(get_dep stdnn-ops)
+        git checkout $commit
         ./configure --prefix=$HOME/local
         make install
 
