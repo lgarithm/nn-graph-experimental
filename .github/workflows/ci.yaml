@@ -11,6 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - run: . ./auto/cmake
+
     - name: install stdtracer
       run: |
         git clone https://github.com/lgarithm/stdtracer.git
@@ -22,7 +24,7 @@ jobs:
       run: |
         git clone https://github.com/lgarithm/stdtensor.git
         cd stdtensor
-        git checkout $(head -n 1 ../deps/stdtensor)
+        git checkout $(get_dep stdtensor)
         ./configure --prefix=$HOME/local
         make install
 
@@ -30,7 +32,7 @@ jobs:
       run: |
         git clone https://github.com/lgarithm/stdnn-ops.git
         cd stdnn-ops
-        git checkout $(head -n 1 ../deps/stdnn-ops)
+        git checkout $(get_dep stdnn-ops)
         ./configure --prefix=$HOME/local
         make install
 
