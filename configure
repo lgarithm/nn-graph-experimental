@@ -15,6 +15,7 @@ BLAS_HOME=
 USE_CMAKE=1
 USE_CLANG_TIDY=0
 ENABLE_CUDA=${HAVE_CUDA}
+ENABLE_TRACE=0
 CUDA_HOME=/usr/local/cuda
 VERBOSE=0
 
@@ -54,6 +55,9 @@ parse_args() {
         --enable-cuda)
             ENABLE_CUDA=1
             ;;
+        --enable-trace)
+            ENABLE_TRACE=1
+            ;;
         --verbose)
             VERBOSE=1
             ;;
@@ -86,7 +90,7 @@ add_cmake_flags() {
     add_cmake_flag BUILD_EXAMPLES ${BUILD_EXAMPLES}
     add_cmake_flag BUILD_GPU_EXAMPLES ${BUILD_GPU_EXAMPLES}
 
-    add_cmake_flag CMAKE_PREFIX_PATH "$HOME/local;$HOME/local/openblas:$HOME/local/gtest"
+    add_cmake_flag CMAKE_PREFIX_PATH $CMAKE_PREFIX_PATH
 
     add_cmake_flag EXECUTABLE_OUTPUT_PATH $(pwd)/bin
     add_cmake_flag LIBRARY_OUTPUT_PATH $(pwd)/lib
@@ -115,6 +119,7 @@ add_cmake_flags() {
         add_cmake_flag CMAKE_CUDA_COMPILER $CUDA_HOME/bin/nvcc
         add_cmake_flag STDNN_OPS_CUDA_GIT_TAG $(get_dep stdnn-ops-cuda)
     fi
+    add_cmake_flag ENABLE_TRACE $ENABLE_TRACE
 }
 
 main() {
