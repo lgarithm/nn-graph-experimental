@@ -98,6 +98,11 @@ struct cuda_op<ttl::nn::ops::grad::copy_flatten<rs...>> {
 };
 
 template <>
+struct cuda_op<ttl::nn::ops::relu> {
+    using type = ttl::nn::ops::relu;
+};
+
+template <>
 struct cuda_op<ttl::nn::ops::add> {
     using type = ttl::nn::ops::add;
 };
@@ -112,7 +117,7 @@ struct cuda_op<ttl::nn::ops::axpy> {
     using type = ttl::nn::ops::axpy;
 };
 
-template <int p>
+template <arity_t p>
 struct cuda_op<ttl::nn::ops::grad::mul<p>> {
     using type = ttl::nn::cuda::ops::grad::mul<p>;
 };
@@ -152,19 +157,19 @@ struct cuda_op<ttl::nn::ops::xentropy> {
     using type = ttl::nn::ops::xentropy;
 };
 
-template <int p>
+template <arity_t p>
 struct cuda_op<ttl::nn::ops::grad::add_bias<ttl::nn::ops::hw, p>> {
-    using type = ttl::nn::cuda::ops::grad::add_bias<ttl::nn::ops::hw, p>;
+    using type = ttl::nn::ops::grad::add_bias<ttl::nn::ops::hw, p>;
 };
 
-template <int p>
+template <arity_t p>
 struct cuda_op<ttl::nn::ops::grad::add_bias<ttl::nn::ops::nhwc, p>> {
-    using type = ttl::nn::cuda::ops::grad::add_bias<ttl::nn::ops::nhwc, p>;
+    using type = ttl::nn::ops::grad::add_bias<ttl::nn::ops::nhwc, p>;
 };
 
-template <int p, typename E>
-struct cuda_op<ttl::nn::ops::grad::matmul<p, E>> {
-    using type = ttl::nn::cuda::ops::grad::matmul<p>;
+template <arity_t p>
+struct cuda_op<ttl::nn::ops::grad::matmul<p>> {
+    using type = ttl::nn::ops::grad::matmul<p>;
 };
 
 template <>

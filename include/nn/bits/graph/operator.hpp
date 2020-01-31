@@ -3,15 +3,15 @@
 namespace ttl::nn::graph::internal
 {
 
-// A tensor_function wraps an operator in stdnn-ops or stdnn-ops-cuda
-template <typename Op>
-class tensor_function
-{
-    const Op f_;
+// // A tensor_function wraps an operator in stdnn-ops or stdnn-ops-cuda
+// template <typename Op>
+// class tensor_function
+// {
+//     const Op f_;
 
-  public:
-    tensor_function(const Op &f) : f_(f) {}
-};
+//   public:
+//     tensor_function(const Op &f) : f_(f) {}
+// };
 
 template <bool, class F, class B>
 struct create_op_t;

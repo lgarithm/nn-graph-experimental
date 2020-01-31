@@ -14,7 +14,8 @@ auto cnn(builder &b, const ttl::nn::graph::internal::var_node<R, 4> *x,
     const auto [n, h, w, c] = x->shape().dims();
     auto kernel =
         b.template covar<R>("kernel", ttl::make_shape(r, s, c, n_filters),
-                            ttl::nn::ops::truncated_normal(.1));
+                            // ttl::nn::ops::truncated_normal(.1)
+                            nn::ops::constant<R>(0.1));
     auto bias = b.template covar<R>("bias", ttl::make_shape(n_filters),
                                     ttl::nn::ops::constant<R>(0.1));
 
