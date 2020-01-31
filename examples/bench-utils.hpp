@@ -63,7 +63,7 @@ struct make_tensor<gpu> {
     {
         using R = typename TT::value_type;
         ttl::cuda_tensor<R, TT::rank> t(tt.shape());
-        ttl::nn::cuda::ops::constant<R>(0)(ref(t));
+        ttl::nn::ops::constant<R>(0)(ref(t));
         return t;
     }
 };

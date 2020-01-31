@@ -15,6 +15,8 @@ flags() {
     echo --gpu-examples
     echo --enable-cuda
     echo --enable-trace
+    echo --use-blas
+    echo --with-blas=$HOME/local/openblas
 }
 
 rebuild() {

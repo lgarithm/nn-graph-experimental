@@ -49,9 +49,9 @@ void graph_example()
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     {
-        ttl::nn::cuda::ops::ones()(x->get_ref(rt));
-        ttl::nn::cuda::ops::ones()(y->get_ref(rt));
-        ttl::nn::cuda::ops::ones()(z->get_ref(rt));
+        ttl::nn::ops::ones()(x->get_ref(rt));
+        ttl::nn::ops::ones()(y->get_ref(rt));
+        ttl::nn::ops::ones()(z->get_ref(rt));
     }
     b.run(rt, z);
     {

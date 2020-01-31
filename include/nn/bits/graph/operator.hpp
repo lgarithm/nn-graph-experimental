@@ -38,11 +38,11 @@ F create_op(const B &b)
 
 #ifdef NN_GRAPH_ENABLE_CUDA
 template <typename F, typename R>
-cuda::ops::constant<R> create_op(const nn::ops::constant<R> &f)
+ops::constant<R> create_op(const nn::ops::constant<R> &f)
 {
     ttl::tensor<R, 0> value;
     f(ref(value));
-    return cuda::ops::constant<R>(value.data()[0]);
+    return ops::constant<R>(value.data()[0]);
 }
 #endif
 }  // namespace ttl::nn::graph::internal
