@@ -4,12 +4,12 @@
 
 TEST(node_test, test1)
 {
-    using nn::graph::internal::forward_func_node;
-    using nn::graph::internal::var_node;
+    using ttl::nn::graph::internal::forward_func_node;
+    using ttl::nn::graph::internal::var_node;
 
     using X0 = var_node<float, 0>;
     using X1 = var_node<float, 0>;
-    using F = nn::ops::add;
+    using F = ttl::nn::ops::add;
     using Y = var_node<float, 0>;
 
     X0 x0(ttl::make_shape(), "");  // FIXME: flip order
@@ -46,8 +46,8 @@ class none_differentiable_binary_op
 
 TEST(node_test, test2)
 {
-    using nn::graph::internal::forward_func_node;
-    using nn::graph::internal::var_node;
+    using ttl::nn::graph::internal::forward_func_node;
+    using ttl::nn::graph::internal::var_node;
 
     using X0 = var_node<float, 0>;
     using X1 = var_node<float, 0>;

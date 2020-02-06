@@ -7,10 +7,12 @@
 #include <nn/bits/graph/common.hpp>
 #include <ttl/shape>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
-template <typename R, ttl::rank_t r, typename D> class tensor_variable;
-template <typename R, ttl::rank_t r, typename D> class tensor_reference;
+template <typename R, ttl::rank_t r, typename D>
+class tensor_variable;
+template <typename R, ttl::rank_t r, typename D>
+class tensor_reference;
 
 class variable
 {
@@ -92,7 +94,8 @@ class tensor_reference : public reference
     Ref get() const { return value_.value(); }
 };
 
-template <typename D> class variable_manager
+template <typename D>
+class variable_manager
 {
     std::vector<std::unique_ptr<variable>> variables_;
     std::vector<std::unique_ptr<reference>> references_;
@@ -115,4 +118,4 @@ template <typename D> class variable_manager
         return tr;
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

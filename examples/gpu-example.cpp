@@ -1,13 +1,14 @@
 // #define NN_GRAPG_TRACE 1
 
 #include <nn/graph>
-#include <nn/ops>
-#include <ttl/copy>
+#include <ttl/experimental/copy>
+#include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "trace.hpp"
 
-template <typename T> auto make_tensor_like(const T &t)
+template <typename T>
+auto make_tensor_like(const T &t)
 {
     return ttl::tensor<typename T::value_type, T::rank>(t.shape());
 }
@@ -19,7 +20,7 @@ void _eager_example()
     ttl::cuda_tensor<R, 1> x(n);
     ttl::cuda_tensor<R, 1> y(n);
     ttl::cuda_tensor<R, 1> z(n);
-    nn::cuda::ops::add()(ref(z), view(x), view(y));
+    ttl::nn::ops::add()(ref(z), view(x), view(y));
 }
 
 void warmup()
@@ -38,25 +39,25 @@ void graph_example()
 {
     LOG_SCOPE(__func__);
 
-    nn::graph::gpu_builder b;
+    ttl::nn::graph::gpu_builder b;
     const int n = 1 << 20;
 
     auto x = b.covar<int>(b.shape(n));
     auto y = b.covar<int>(b.shape(n));
-    auto z = b.invoke(nn::ops::add(), x, y);
+    auto z = b.invoke(ttl::nn::ops::add(), x, y);
 
-    nn::graph::gpu_runtime rt;
+    ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     {
-        nn::cuda::ops::ones()(x->get_ref(rt));
-        nn::cuda::ops::ones()(y->get_ref(rt));
-        nn::cuda::ops::ones()(z->get_ref(rt));
+        ttl::nn::ops::ones()(x->get_ref(rt));
+        ttl::nn::ops::ones()(y->get_ref(rt));
+        ttl::nn::ops::ones()(z->get_ref(rt));
     }
     b.run(rt, z);
     {
         auto v = z->get_view(rt);
         ttl::tensor<int, 1> zz(z->shape());
-        v.to_host(zz.data());
+        ttl::copy(ttl::ref(zz), v);
         std::cerr << "z[0] = " << zz.data()[0] << std::endl;
     }
 }
@@ -65,15 +66,15 @@ void gpu_sgd_example()
 {
     LOG_SCOPE(__func__);
 
-    nn::graph::gpu_builder b;
+    ttl::nn::graph::gpu_builder b;
 
-    auto x = b.covar<float>("x", b.shape(), nn::ops::ones());
-    auto y = b.invoke(nn::ops::mul(), x, x);
+    auto x = b.covar<float>("x", b.shape(), ttl::nn::ops::ones());
+    auto y = b.invoke(ttl::nn::ops::mul(), x, x);
 
-    nn::graph::optimizer opt;
+    ttl::nn::graph::optimizer opt;
     auto train_step = opt.minimize(b, y);
 
-    nn::graph::gpu_runtime rt;
+    ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
 
@@ -86,13 +87,13 @@ void gpu_sgd_example()
         {
             auto v = y->get_view(rt);
             auto vv = make_tensor_like(v);
-            ttl::copy(ref(vv), v);
+            ttl::copy(ttl::ref(vv), v);
             std::cerr << "y = " << vv.data()[0] << std::endl;
         }
         {
             auto v = x->get_view(rt);
             auto vv = make_tensor_like(v);
-            ttl::copy(ref(vv), v);
+            ttl::copy(ttl::ref(vv), v);
             std::cerr << "x = " << vv.data()[0] << std::endl;
         }
     }

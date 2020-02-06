@@ -2,16 +2,19 @@
 #include <nn/bits/graph/apply.hpp>
 #include <nn/bits/graph/cuda_ops.hpp>
 #include <nn/bits/graph/runtime.hpp>
-#include <nn/bits/ops/axpy.hpp>
+#include <ttl/nn/bits/ops/blas.hpp>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
-template <typename R, ttl::rank_t r> class var_node;
+template <typename R, ttl::rank_t r>
+class var_node;
 class base_var_node;
 
-template <typename D> class gradient_descent
+template <typename D>
+class gradient_descent
 {
-    template <typename R, ttl::rank_t r> using tensor = ttl::tensor<R, r, D>;
+    template <typename R, ttl::rank_t r>
+    using tensor = ttl::tensor<R, r, D>;
 
     using RT = basic_runtime<D>;
     using axpy = typename nn::for_device<nn::ops::axpy, D>::type;
@@ -33,4 +36,4 @@ template <typename D> class gradient_descent
         };
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

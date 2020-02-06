@@ -4,7 +4,7 @@
 
 #include <nn/bits/graph/symbol.hpp>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 class symbol_manager
 {
@@ -26,4 +26,4 @@ class symbol_manager
         return create<R, r>(ttl::shape<r>(dims...));
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

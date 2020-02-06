@@ -3,18 +3,23 @@
 
 #include <nn/bits/graph/device.hpp>
 
-namespace nn
+namespace ttl::nn
 {
 namespace ops
 {
-template <typename F> class not_implemented_for_cuda
+template <typename F>
+class not_implemented_for_cuda
 {
     mutable int cnt_;
 
   public:
-    template <typename... T> not_implemented_for_cuda(const T &...) : cnt_(0) {}
+    template <typename... T>
+    not_implemented_for_cuda(const T &...) : cnt_(0)
+    {
+    }
 
-    template <typename... T> void operator()(const T &...) const
+    template <typename... T>
+    void operator()(const T &...) const
     {
         if (cnt_ == 0) {
             std::cerr << demangled_type_info_name(typeid(F))
@@ -25,125 +30,157 @@ template <typename F> class not_implemented_for_cuda
 };
 }  // namespace ops
 
-template <typename F> struct cuda_op;
+template <typename F>
+struct cuda_op;
 
-template <typename F, typename D> struct for_device;
+template <typename F, typename D>
+struct for_device;
 
-template <typename F> struct for_device<F, nn::graph::internal::cpu> {
+template <typename F>
+struct for_device<F, nn::graph::internal::cpu> {
     using type = F;
 };
 
-template <typename F> struct for_device<F, nn::graph::internal::nvidia_gpu> {
+template <typename F>
+struct for_device<F, nn::graph::internal::nvidia_gpu> {
     using type = typename cuda_op<F>::type;
 };
 
-template <typename F> struct cuda_op {
+template <typename F>
+struct cuda_op {
     using type = ops::not_implemented_for_cuda<F>;
 };
-}  // namespace nn
+}  // namespace ttl::nn
 
 #ifdef NN_GRAPH_ENABLE_CUDA
-#    include <nn/bits/ops/gradients/bias.hpp>
-#    include <nn/bits/ops/gradients/matmul.hpp>
-#    include <nn/bits/ops/gradients/mul.hpp>
-#    include <nn/bits/ops/gradients/reshape.hpp>
-#    include <nn/bits/ops/gradients/softmax.hpp>
-#    include <nn/bits/ops/gradients/xentropy.hpp>
-#    include <nn/ops>
+#    include <ttl/nn/bits/ops/gradients/bias.hpp>
+#    include <ttl/nn/bits/ops/gradients/matmul.hpp>
+#    include <ttl/nn/bits/ops/gradients/mul.hpp>
+#    include <ttl/nn/bits/ops/gradients/reshape.hpp>
+#    include <ttl/nn/bits/ops/gradients/softmax.hpp>
+#    include <ttl/nn/bits/ops/gradients/xentropy.hpp>
+#    include <ttl/nn/ops>
 
-#    include <nn/cuda/gradients>
-#    include <nn/cuda/ops>
+#    include <ttl/nn/cuda_gradients>
+#    include <ttl/nn/cuda_ops>
+#    include <ttl/nn/kernels/cuda>
 
-namespace nn
+namespace ttl::nn
 {
-
-template <> struct cuda_op<ops::zeros> {
-    using type = cuda::ops::zeros;
+template <>
+struct cuda_op<ttl::nn::ops::zeros> {
+    using type = ttl::nn::ops::zeros;
 };
 
-template <> struct cuda_op<ops::ones> {
-    using type = cuda::ops::ones;
+template <>
+struct cuda_op<ttl::nn::ops::ones> {
+    using type = ttl::nn::ops::ones;
 };
 
-template <typename R> struct cuda_op<ops::constant<R>> {
-    using type = cuda::ops::constant<R>;
+template <typename R>
+struct cuda_op<ttl::nn::ops::constant<R>> {
+    using type = ttl::nn::ops::constant<R>;
 };
 
-template <> struct cuda_op<ops::uniform_distribution> {
-    using type = cuda::ops::uniform_distribution;
+template <>
+struct cuda_op<ttl::nn::ops::uniform_constant> {
+    using type = ttl::nn::ops::uniform_constant;
 };
 
-template <ttl::rank_t... rs> struct cuda_op<ops::copy_flatten<rs...>> {
-    using type = cuda::ops::copy_flatten<rs...>;
+template <ttl::rank_t... rs>
+struct cuda_op<ttl::nn::ops::copy_flatten<rs...>> {
+    using type = ttl::nn::cuda::ops::copy_flatten<rs...>;
 };
 
-template <ttl::rank_t... rs> struct cuda_op<ops::grad::copy_flatten<rs...>> {
-    using type = cuda::ops::grad::copy_flatten<rs...>;
+template <ttl::rank_t... rs>
+struct cuda_op<ttl::nn::ops::grad::copy_flatten<rs...>> {
+    using type = ttl::nn::cuda::ops::grad::copy_flatten<rs...>;
 };
 
-template <> struct cuda_op<ops::add> {
-    using type = cuda::ops::add;
+template <>
+struct cuda_op<ttl::nn::ops::relu> {
+    using type = ttl::nn::ops::relu;
 };
 
-template <> struct cuda_op<ops::mul> {
-    using type = cuda::ops::mul;
+template <>
+struct cuda_op<ttl::nn::ops::add> {
+    using type = ttl::nn::ops::add;
 };
 
-template <> struct cuda_op<ops::axpy> {
-    using type = cuda::ops::axpy;
+template <>
+struct cuda_op<ttl::nn::ops::mul> {
+    using type = ttl::nn::ops::mul;
 };
 
-template <int p> struct cuda_op<ops::grad::mul<p>> {
-    using type = cuda::ops::grad::mul<p>;
+template <>
+struct cuda_op<ttl::nn::ops::axpy> {
+    using type = ttl::nn::ops::axpy;
 };
 
-template <typename E> struct cuda_op<ops::matmul_<E>> {
-    using type = cuda::ops::matmul;
+template <arity_t p>
+struct cuda_op<ttl::nn::ops::grad::mul<p>> {
+    using type = ttl::nn::cuda::ops::grad::mul<p>;
 };
 
-template <> struct cuda_op<ops::conv<ops::nhwc, ops::rscd>> {
-    using type = cuda::ops::conv<nhwc, rscd>;
+template <>
+struct cuda_op<ttl::nn::ops::matmul> {
+    using type = ttl::nn::ops::matmul;
 };
 
-template <typename image_order> struct cuda_op<ops::add_bias<image_order>> {
-    using type = cuda::ops::add_bias<image_order>;
+template <typename image_order, typename filter_order>
+struct cuda_op<ttl::nn::ops::conv<image_order, filter_order>> {
+    using type = ttl::nn::ops::conv<image_order, filter_order>;
 };
 
-template <> struct cuda_op<ops::softmax> {
-    using type = cuda::ops::softmax;
+template <typename image_order>
+struct cuda_op<ttl::nn::ops::add_bias<image_order>> {
+    using type = ttl::nn::ops::add_bias<image_order>;
 };
 
-template <> struct cuda_op<ops::argmax> {
-    using type = cuda::ops::argmax;
+template <>
+struct cuda_op<ttl::nn::ops::softmax> {
+    using type = ttl::nn::ops::softmax;
 };
 
-template <> struct cuda_op<ops::similarity> {
-    using type = cuda::ops::similarity;
+template <>
+struct cuda_op<ttl::nn::ops::argmax> {
+    using type = ttl::nn::ops::argmax;
 };
 
-template <> struct cuda_op<ops::xentropy> {
-    using type = cuda::ops::xentropy;
+template <>
+struct cuda_op<ttl::nn::ops::similarity> {
+    using type = ttl::nn::ops::similarity;
 };
 
-template <int p> struct cuda_op<ops::grad::add_bias<ops::hw, p>> {
-    using type = cuda::ops::grad::add_bias<hw, p>;
+template <>
+struct cuda_op<ttl::nn::ops::xentropy> {
+    using type = ttl::nn::ops::xentropy;
 };
 
-template <int p> struct cuda_op<ops::grad::add_bias<ops::nhwc, p>> {
-    using type = cuda::ops::grad::add_bias<nhwc, p>;
+template <arity_t p>
+struct cuda_op<ttl::nn::ops::grad::add_bias<ttl::nn::ops::hw, p>> {
+    using type = ttl::nn::ops::grad::add_bias<ttl::nn::ops::hw, p>;
 };
 
-template <int p, typename E> struct cuda_op<ops::grad::matmul<p, E>> {
-    using type = cuda::ops::grad::matmul<p>;
+template <arity_t p>
+struct cuda_op<ttl::nn::ops::grad::add_bias<ttl::nn::ops::nhwc, p>> {
+    using type = ttl::nn::ops::grad::add_bias<ttl::nn::ops::nhwc, p>;
 };
 
-template <> struct cuda_op<ops::grad::softmax<0>> {
-    using type = cuda::ops::grad::softmax<0>;
+template <arity_t p>
+struct cuda_op<ttl::nn::ops::grad::matmul<p>> {
+    using type = ttl::nn::ops::grad::matmul<p>;
 };
 
-template <> struct cuda_op<ops::grad::xentropy<1>> {
-    using type = cuda::ops::grad::xentropy<1>;
+template <>
+struct cuda_op<ttl::nn::ops::grad::softmax<0>> {
+    using type = ttl::nn::cuda::ops::grad::softmax<0>;
 };
 
-}  // namespace nn
+template <>
+struct cuda_op<ttl::nn::ops::grad::xentropy<1>> {
+    using type = ttl::nn::cuda::ops::grad::xentropy<1>;
+};
+
+}  // namespace ttl::nn
 #endif

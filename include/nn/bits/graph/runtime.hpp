@@ -1,14 +1,14 @@
 #pragma once
 #include <map>
 
+#include <ttl/experimental/show_size>
 #include <ttl/shape>
-#include <ttl/show_size>
 
 #include <nn/bits/graph/apply.hpp>
 #include <nn/bits/graph/variable_manager.hpp>
 #include <nn/bits/tuple.hpp>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 class base_var_node;
 
@@ -136,4 +136,4 @@ class basic_runtime : public runtime
 
 using cpu_runtime = basic_runtime<cpu>;
 using gpu_runtime = basic_runtime<nvidia_gpu>;
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

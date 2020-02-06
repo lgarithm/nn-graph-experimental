@@ -11,9 +11,10 @@
 #include <nn/bits/graph/operator.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/gradients>
+#include <ttl/cuda_tensor>
 #include <ttl/tensor>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 
 class node
@@ -70,7 +71,8 @@ class op_node : public node
     std::vector<const node *> dependencies() const { return dependencies_; }
 };
 
-template <typename R, ttl::rank_t r> class var_node;
+template <typename R, ttl::rank_t r>
+class var_node;
 
 class base_var_node : public node
 {
@@ -92,7 +94,8 @@ class base_var_node : public node
 
     virtual void define(gpu_runtime &rt) const = 0;
 
-    template <typename R, ttl::rank_t r> var_node<R, r> *as() const
+    template <typename R, ttl::rank_t r>
+    var_node<R, r> *as() const
     {
         using V = var_node<R, r>;
         return const_cast<V *>(down_cast<V>(this));
@@ -102,7 +105,8 @@ class base_var_node : public node
                                      const base_var_node *lr) const = 0;
 };
 
-template <typename R, ttl::rank_t r> class var_node : public base_var_node
+template <typename R, ttl::rank_t r>
+class var_node : public base_var_node
 {
     const ttl::shape<r> shape_;
     const std::string name_;
@@ -241,4 +245,4 @@ class func_node : public base_func_node
         rt.run(g_, std::make_tuple(y_), xs_);
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

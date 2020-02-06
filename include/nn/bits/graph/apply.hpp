@@ -11,10 +11,10 @@
 #include <nn/bits/graph/device.hpp>
 
 #if NN_GRAPG_TRACE
-#include <nn/bits/graph/trace.hpp>
+#    include <nn/bits/graph/trace.hpp>
 #endif
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 template <typename Tuple, size_t... I>
 std::string signature(const Tuple &args, std::index_sequence<I...>)
@@ -43,8 +43,10 @@ std::string apply_name(const F &f, const std::tuple<Args...> &args,
     }
 }
 
-template <typename> struct traced_apply;
-template <> struct traced_apply<cpu> {
+template <typename>
+struct traced_apply;
+template <>
+struct traced_apply<cpu> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
@@ -53,7 +55,8 @@ template <> struct traced_apply<cpu> {
     }
 };
 
-template <> struct traced_apply<nvidia_gpu> {
+template <>
+struct traced_apply<nvidia_gpu> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
@@ -62,9 +65,11 @@ template <> struct traced_apply<nvidia_gpu> {
     }
 };
 
-template <typename, bool> struct maybe_apply;
+template <typename, bool>
+struct maybe_apply;
 
-template <typename D> struct maybe_apply<D, false> {
+template <typename D>
+struct maybe_apply<D, false> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
@@ -83,7 +88,8 @@ template <typename D> struct maybe_apply<D, false> {
     }
 };
 
-template <typename D> struct maybe_apply<D, true> {
+template <typename D>
+struct maybe_apply<D, true> {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
@@ -100,4 +106,4 @@ void apply_if(const F &f, const std::tuple<Args...> &args)
 {
     maybe_apply<D, std::is_invocable<F, Args...>::value>()(f, args);
 }
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

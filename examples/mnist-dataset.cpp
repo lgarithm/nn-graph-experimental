@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include <nn/bits/graph/common.hpp>
-#include <nn/experimental/datasets>
 #include <ttl/debug>
+#include <ttl/nn/experimental/datasets>
 #include <ttl/range>
 
 int main(int argc, char *argv[])

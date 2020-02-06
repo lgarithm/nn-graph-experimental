@@ -11,13 +11,14 @@
 #include <nn/bits/graph/node.hpp>
 #include <nn/bits/graph/runtime.hpp>
 #include <nn/bits/graph/symbol_manager.hpp>
-#include <nn/bits/ops/init.hpp>
-#include <nn/bits/ops/noop.hpp>
+#include <ttl/nn/bits/ops/elementary.hpp>
+#include <ttl/nn/bits/ops/init.hpp>
 #include <ttl/tensor>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
-template <typename Op, typename... Rs> struct infer {
+template <typename Op, typename... Rs>
+struct infer {
     using type = typename std::tuple_element<0, std::tuple<Rs...>>::type;
 };
 
@@ -186,7 +187,8 @@ class base_builder
 
     using grad_var_t = std::pair<const base_var_node *, const base_var_node *>;
 
-    template <typename R, ttl::rank_t r> auto gradients(const var_node<R, r> *y)
+    template <typename R, ttl::rank_t r>
+    auto gradients(const var_node<R, r> *y)
     {
         const std::set<const base_var_node *> xs(covars_.begin(),
                                                  covars_.end());
@@ -218,7 +220,8 @@ class base_builder
     }
 };
 
-template <typename RT> class builder : public base_builder
+template <typename RT>
+class builder : public base_builder
 {
   public:
     void build(RT &rt) const
@@ -292,4 +295,4 @@ template <typename RT> class builder : public base_builder
         }
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

@@ -2,7 +2,7 @@
 #include <nn/bits/graph/builder.hpp>
 #include <nn/bits/graph/runtime.hpp>
 
-namespace nn::graph::internal
+namespace ttl::nn::graph::internal
 {
 
 using var_node_list_t = std::vector<const base_var_node *>;
@@ -36,9 +36,10 @@ class optimizer
             b.own(op);
         }
 
-        return b.op("minimize",                   //
-                    [](basic_runtime<cpu> &) {},  //
-                    [](basic_runtime<nvidia_gpu> &) {}, apply_ops);
+        return b.op(
+            "minimize",                   //
+            [](basic_runtime<cpu> &) {},  //
+            [](basic_runtime<nvidia_gpu> &) {}, apply_ops);
     }
 };
-}  // namespace nn::graph::internal
+}  // namespace ttl::nn::graph::internal

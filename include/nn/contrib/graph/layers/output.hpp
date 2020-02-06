@@ -1,15 +1,15 @@
 #include <tuple>
 
-#include <nn/ops>
+#include <ttl/nn/ops>
 
 #include <nn/bits/graph/builder.hpp>
 
-namespace nn::graph::layers
+namespace ttl::nn::graph::layers
 {
 template <typename R, typename builder>
-auto classification_output(builder &b,
-                           const nn::graph::internal::var_node<R, 2> *out,
-                           const nn::graph::internal::var_node<R, 2> *labels)
+auto classification_output(
+    builder &b, const ttl::nn::graph::internal::var_node<R, 2> *out,
+    const ttl::nn::graph::internal::var_node<R, 2> *labels)
 {
     auto probs = b.template invoke<float>("probs", nn::ops::softmax(), out);
     auto loss =
@@ -23,4 +23,4 @@ auto classification_output(builder &b,
         b.template invoke<int32_t>("labels", nn::ops::argmax(), labels));
     return std::make_tuple(loss, accuracy);
 }
-}  // namespace nn::graph::layers
+}  // namespace ttl::nn::graph::layers
