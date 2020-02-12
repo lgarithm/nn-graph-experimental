@@ -43,6 +43,6 @@ jobs:
     - run: sudo apt install -y libopenblas-dev
     # - run: sudo apt install -y nvidia-cuda-toolkit
 
-    - run: ./configure --tests --build-gtest
+    - run: ./configure --examples --tests --build-gtest
     - run: make
     - run: make test

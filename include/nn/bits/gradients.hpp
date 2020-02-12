@@ -1,4 +1,5 @@
 #pragma once
+#include <ttl/nn/bits/ops/gradients/activation.hpp>
 #include <ttl/nn/bits/ops/gradients/add.hpp>
 #include <ttl/nn/bits/ops/gradients/bias.hpp>
 #include <ttl/nn/bits/ops/gradients/conv2d.hpp>
@@ -47,6 +48,11 @@ struct gradient<ops::xentropy, 1> {
 };
 
 //
+template <>
+struct gradient<ops::relu, 0> {
+    using type = ops::grad::relu<0>;
+};
+
 template <>
 struct gradient<ops::softmax, 0> {
     using type = ops::grad::softmax<0>;

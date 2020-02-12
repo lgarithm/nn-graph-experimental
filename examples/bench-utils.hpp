@@ -93,7 +93,7 @@ class benchmark
         const auto y = make_tensor<D>()(yt);
         const auto xs = std::make_tuple(make_tensor<D>()(xts)...);
         constexpr auto arity = sizeof...(XTs);
-        for (auto i : ttl::range(60)) {
+        for (auto i [[gnu::unused]] : ttl::range(60)) {
             call_op(Op(), y, xs, std::make_index_sequence<arity>());
         }
     }

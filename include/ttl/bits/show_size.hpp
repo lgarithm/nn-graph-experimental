@@ -2,7 +2,9 @@
 #include <iomanip>
 #include <iostream>
 
-namespace
+// fatal error: function 'operator<<' is
+//   not needed and will not be emitted [-Wunneeded-internal-declaration]
+namespace _internal
 {
 class show_size_t
 {
@@ -31,6 +33,10 @@ std::ostream &operator<<(std::ostream &os, const show_size_t &s)
     }
     return os;
 }
-}  // namespace
+}  // namespace _internal
 
-template <typename N> show_size_t show_size(N n) { return show_size_t(n); }
+template <typename N>
+_internal::show_size_t show_size(N n)
+{
+    return _internal::show_size_t(n);
+}

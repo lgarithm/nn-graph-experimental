@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 PROJECT(nn-graph)
 
-OPTION(USE_STRICT "Enable strict build options." OFF)
+OPTION(USE_STRICT "Enable strict build options." ON)
 IF(USE_STRICT)
     ADD_DEFINITIONS(-Wall)
     IF(APPLE)
