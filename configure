@@ -64,6 +64,9 @@ parse_args() {
         --verbose)
             VERBOSE=1
             ;;
+        --quiet)
+            QUIET=1
+            ;;
         *)
             echo "unknown argument $i"
             exit 1
@@ -114,6 +117,7 @@ add_cmake_flags() {
     pass_cmake_flag_from_env STDTENSOR_GIT_URL
     pass_cmake_flag_from_env STDNN_OPS_GIT_URL
 
+    add_cmake_flag STDTRACER_GIT_TAG $(get_dep stdtracer)
     add_cmake_flag STDTENSOR_GIT_TAG $(get_dep stdtensor)
     add_cmake_flag STDNN_OPS_GIT_TAG $(get_dep stdnn-ops)
 

@@ -13,6 +13,7 @@ latest() {
     echo "$commit $tag" | tee $name
 }
 
+latest stdtracer dev lgarithm/stdtracer
 latest stdtensor v0.6.1 lgarithm/stdtensor
 latest stdnn-ops v0.2.0 lgarithm/stdnn-ops
 latest stdnn-ops-cuda draft lgarithm/stdnn-ops-cuda
