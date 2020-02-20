@@ -80,10 +80,20 @@ class tensor_variable : public variable
 
 class reference
 {
+  protected:
+    // FIXME: use std encoding
+    using raw_tensor = ttl::experimental::raw_tensor;
+    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
+    using raw_tensor_view = ttl::experimental::raw_tensor_view;
+    using scalar_encoder = typename raw_tensor::encoder_type;
+
   public:
     virtual ~reference() {}
 
     virtual void unbind() = 0;
+
+    virtual raw_tensor_ref raw_ref() const = 0;
+    virtual raw_tensor_view raw_view() const = 0;
 
     template <typename R, rank_t r, typename D>
     tensor_reference<R, r, D> &as()
@@ -119,6 +129,22 @@ class tensor_reference : public reference
     void unbind() override { value_.reset(); }
 
     Ref get() const { return value_.value(); }
+
+    raw_tensor_ref raw_ref() const override
+    {
+        // FIXME: handle D = cuda_memory
+        const auto &value = value_.value();
+        return raw_tensor_ref(value.data(), scalar_encoder::value<R>(),
+                              value.shape());
+    }
+
+    raw_tensor_view raw_view() const override
+    {
+        // FIXME: handle D = cuda_memory
+        const auto &value = value_.value();
+        return raw_tensor_view(value.data(), scalar_encoder::value<R>(),
+                               value.shape());
+    }
 };
 
 template <typename D>

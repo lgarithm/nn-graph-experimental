@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 
+#include <ttl/experimental/raw_tensor>
 #include <ttl/experimental/show_size>
 #include <ttl/shape>
 
@@ -54,13 +55,16 @@ class runtime
 template <typename D>
 class basic_runtime : public runtime
 {
+    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
+    using raw_tensor_view = ttl::experimental::raw_tensor_view;
+
   protected:
     variable_manager<D> vm_;
 
     std::map<key_t, variable *> vars_;
     std::map<key_t, reference *> binds_;
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     ttl::tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
@@ -71,7 +75,7 @@ class basic_runtime : public runtime
     }
 
   public:
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     auto create(const ttl::shape<r> &shape, key_t key)
     {
         if (vars_.count(key) > 0) {
@@ -82,7 +86,7 @@ class basic_runtime : public runtime
         return t;
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     auto define(const ttl::shape<r> &shape, key_t key)
     {
         if (binds_.count(key) > 0) {
@@ -93,7 +97,7 @@ class basic_runtime : public runtime
         return t;
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
     {
         binds_.at(key)->template as<R, r, D>().bind(t);
@@ -101,16 +105,31 @@ class basic_runtime : public runtime
 
     void unbind(key_t key) { binds_.at(key)->unbind(); }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     ttl::tensor_ref<R, r, D> get_ref(key_t key) const
     {
         return get<R, r>(key);
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     ttl::tensor_view<R, r, D> get_view(key_t key) const
     {
         return get<R, r>(key);
+    }
+
+    raw_tensor_ref get_raw_ref(key_t key) const
+    {
+        // FIXME: handle ttl::cuda_memory
+        if (binds_.count(key) > 0) {
+            return binds_.at(key)->raw_ref();
+        } else {
+            return vars_.at(key)->raw_ref();
+        }
+    }
+
+    raw_tensor_view get_raw_view(key_t key) const
+    {
+        return raw_tensor_view(get_raw_ref(key));
     }
 
     template <typename F, typename Outputs, typename Inputs>
