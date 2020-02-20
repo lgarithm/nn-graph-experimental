@@ -51,7 +51,9 @@ get_dep() {
 log_config_var() {
     local name=$1
     local val=$(eval echo \$$name)
-    echo "$name=$val"
+    if [ $QUIET -eq 0 ]; then
+        echo "$name=$val"
+    fi
 }
 
 config_cmake() {

@@ -5,21 +5,34 @@
 #include <vector>
 
 #include <nn/bits/graph/common.hpp>
+#include <ttl/experimental/raw_tensor>
 #include <ttl/shape>
+#include <ttl/tensor>
 
 namespace ttl::nn::graph::internal
 {
-template <typename R, ttl::rank_t r, typename D>
+template <typename R, rank_t r, typename D>
 class tensor_variable;
-template <typename R, ttl::rank_t r, typename D>
+
+template <typename R, rank_t r, typename D>
 class tensor_reference;
 
 class variable
 {
+  protected:
+    // FIXME: use std encoding
+    using raw_tensor = ttl::experimental::raw_tensor;
+    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
+    using raw_tensor_view = ttl::experimental::raw_tensor_view;
+    using scalar_encoder = typename raw_tensor::encoder_type;
+
   public:
     virtual ~variable() {}
 
-    template <typename R, ttl::rank_t r, typename D>
+    virtual raw_tensor_ref raw_ref() const = 0;
+    virtual raw_tensor_view raw_view() const = 0;
+
+    template <typename R, rank_t r, typename D>
     tensor_variable<R, r, D> &as()
     {
         return *down_cast<tensor_variable<R, r, D>>(this);
@@ -30,7 +43,7 @@ class variable
     virtual operator std::string() const = 0;
 };
 
-template <typename R, ttl::rank_t r, typename D>
+template <typename R, rank_t r, typename D>
 class tensor_variable : public variable
 {
     using T = ttl::tensor<R, r, D>;
@@ -42,6 +55,20 @@ class tensor_variable : public variable
     tensor_variable(const ttl::shape<r> &shape) : value_(shape) {}
 
     Ref get() const { return Ref(value_); }
+
+    raw_tensor_ref raw_ref() const override
+    {
+        // FIXME: handle D = cuda_memory
+        return raw_tensor_ref(value_.data(), scalar_encoder::value<R>(),
+                              value_.shape());
+    }
+
+    raw_tensor_view raw_view() const override
+    {
+        // FIXME: handle D = cuda_memory
+        return raw_tensor_view(value_.data(), scalar_encoder::value<R>(),
+                               value_.shape());
+    }
 
     size_t data_size() const override { return value_.data_size(); }
 
@@ -58,14 +85,14 @@ class reference
 
     virtual void unbind() = 0;
 
-    template <typename R, ttl::rank_t r, typename D>
+    template <typename R, rank_t r, typename D>
     tensor_reference<R, r, D> &as()
     {
         return *down_cast<tensor_reference<R, r, D>>(this);
     }
 };
 
-template <typename R, ttl::rank_t r, typename D>
+template <typename R, rank_t r, typename D>
 class tensor_reference : public reference
 {
     using Ref = ttl::tensor_ref<R, r, D>;
@@ -101,7 +128,7 @@ class variable_manager
     std::vector<std::unique_ptr<reference>> references_;
 
   public:
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     tensor_variable<R, r, D> *create_tensor(const ttl::shape<r> &shape)
     {
         auto v = new tensor_variable<R, r, D>(shape);
@@ -109,7 +136,7 @@ class variable_manager
         return v;
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     tensor_reference<R, r, D> *
     create_tensor_reference(const ttl::shape<r> &shape)
     {
