@@ -1,5 +1,6 @@
 #include <experimental/zip>
 #include <nn/graph>
+#include <stdml/control>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
@@ -46,8 +47,7 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
-    ttl::nn::graph::internal::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.1);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -65,7 +65,7 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     auto test_labels = prepro(test.labels);
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy, do_test);
+                test_labels, xs, y_s, gvs, accuracy, do_test);
 }
 
 template <typename T>
@@ -83,8 +83,7 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
 
-    ttl::nn::graph::internal::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.1);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
@@ -107,7 +106,7 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     auto test_labels = make_cuda_tensor_from(ttl::view(test_labels_cpu));
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy, do_test);
+                test_labels, xs, y_s, gvs, accuracy, do_test);
 }
 
 int main(int argc, char *argv[])

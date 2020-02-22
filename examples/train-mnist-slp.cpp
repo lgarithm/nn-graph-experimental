@@ -34,8 +34,7 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    ttl::nn::graph::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.5);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -58,7 +57,7 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy);
+                test_labels, xs, y_s, gvs, accuracy);
 }
 
 template <typename T>
@@ -76,8 +75,7 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    ttl::nn::graph::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.5);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
@@ -105,7 +103,7 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy, do_test);
+                test_labels, xs, y_s, gvs, accuracy, do_test);
 }
 
 void show_args(int argc, char *argv[])

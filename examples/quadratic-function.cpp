@@ -1,4 +1,6 @@
+#include "utils.hpp"
 #include <nn/graph>
+#include <stdml/control>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
@@ -9,8 +11,8 @@ void example1()
     auto x = b.covar<float>(ttl::make_shape(), ttl::nn::ops::ones());
     auto y = b.invoke(ttl::nn::ops::mul(), x, x);
 
-    ttl::nn::graph::optimizer opt;
-    auto train_step = opt.minimize(b, y);
+    auto gvs = b.gradients(y);
+    auto gs = firsts(gvs);
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -21,7 +23,7 @@ void example1()
         e *= 0.8;
         std::cerr << "step = " << i << ", 0.8 ^ " << i + 1 << " = " << e
                   << std::endl;
-        b.run(rt, train_step);
+        b.run(rt, gs);
         {
             auto v = y->get_view(rt);
             std::cerr << "y = " << v.data()[0] << std::endl;

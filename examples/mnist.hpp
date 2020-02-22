@@ -1,4 +1,5 @@
 #pragma once
+#include <stdml/control>
 #include <ttl/experimental/copy>
 #include <ttl/experimental/get>
 #include <ttl/nn/ops>
@@ -65,19 +66,26 @@ void train_mnist(int epoches, int batch_size,                           //
                  const Images &test_images, const Labels &test_labels,  //
                  const ttl::nn::graph::var_node *xs,
                  const ttl::nn::graph::var_node *y_s,
-                 const ttl::nn::graph::op_node *train_step,
+                 const std::vector<std::pair<const ttl::nn::graph::var_node *,
+                                             const ttl::nn::graph::var_node *>>
+                     gvs,
                  const ttl::nn::graph::var_node *accuracy, bool do_test = true)
 {
     TRACE_SCOPE(__func__);
     TRACE_STMT(rt.debug());
-
+    const auto gs = firsts(gvs);
     simple_trainer run_train(epoches, batch_size, do_test);
     run_train(images, labels,
               [&](int idx, auto xs_data, auto y_s_data) {
                   TRACE_SCOPE("train batch");
                   rt.bind(xs, xs_data);
                   rt.bind(y_s, y_s_data);
-                  b.run(rt, train_step);
+                  b.run(rt, gs);
+                  for (const auto &[g, v] : gvs) {
+                      TRACE_SCOPE("learn");
+                      stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g),
+                                          0.1);
+                  }
               },
               [&](int epoch, int step) {
                   const auto acc = test_all(b, rt, batch_size, test_images,

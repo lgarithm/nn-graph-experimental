@@ -146,6 +146,7 @@ class basic_runtime : public runtime
     {
         size_t tot = 0;
         for (auto [_, v] : vars_) {
+            static_assert(sizeof(_) > 0, "");
             std::cerr << static_cast<std::string>(*v) << std::endl;
             tot += v->data_size();
         }

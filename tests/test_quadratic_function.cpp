@@ -1,6 +1,7 @@
 #include "testing.hpp"
 
 #include <nn/graph>
+#include <stdml/control>
 
 template <typename T1, typename T2>
 std::vector<T1> firsts(const std::vector<std::pair<T1, T2>> &pairs)
@@ -9,15 +10,6 @@ std::vector<T1> firsts(const std::vector<std::pair<T1, T2>> &pairs)
     std::transform(pairs.begin(), pairs.end(), v.begin(),
                    [](auto p) { return p.first; });
     return v;
-}
-
-template <typename R, ttl::rank_t r>
-void learn(const ttl::tensor_ref<R, r> &x, const ttl::tensor_view<R, r> &g,
-           const R lr)
-{
-    ttl::tensor<R, 0> a;
-    ttl::ref(a) = -lr;
-    ttl::nn::ops::axpy()(x, ttl::view(a), g, ttl::view(x));
 }
 
 TEST(quad_test, test1)
@@ -30,7 +22,6 @@ TEST(quad_test, test1)
     auto gvs = b.gradients(y);
     ASSERT_EQ(static_cast<int>(gvs.size()), 2);  // FIXME: merge gradients
     auto gs = firsts(gvs);
-    // auto gx = gvs.at(0).first;
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -42,9 +33,7 @@ TEST(quad_test, test1)
         b.run(rt, gs);
 
         for (auto &[g, v] : gvs) {
-            learn<float>(
-                ttl::flatten(rt.get_raw_ref(v).template typed<float>()),
-                ttl::flatten(rt.get_raw_view(g).template typed<float>()), 0.1);
+            stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g), 0.1);
         }
 
         auto v = x->get_view(rt);
