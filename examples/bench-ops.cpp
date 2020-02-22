@@ -2,6 +2,8 @@
 #include <nn/graph>
 #include <ttl/nn/ops>
 
+DEFINE_TRACE_CONTEXTS;
+
 void bench_sim()
 {
     ttl::nn::graph::gpu_builder b;

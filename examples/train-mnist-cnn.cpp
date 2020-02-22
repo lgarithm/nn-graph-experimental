@@ -12,6 +12,8 @@
 #include <nn/contrib/graph/layers/dense.hpp>
 #include <nn/contrib/graph/layers/output.hpp>
 
+DEFINE_TRACE_CONTEXTS;
+
 template <typename builder>
 auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
                       int batch_size, int logits)

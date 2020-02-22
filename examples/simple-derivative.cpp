@@ -4,6 +4,8 @@
 
 #include "utils.hpp"
 
+DEFINE_TRACE_CONTEXTS;
+
 int main()
 {
     ttl::nn::graph::builder b;

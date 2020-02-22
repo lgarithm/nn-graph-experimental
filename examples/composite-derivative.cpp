@@ -8,6 +8,8 @@
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
+DEFINE_TRACE_CONTEXTS;
+
 auto simple_auto(ttl::nn::graph::builder &b)
 {
     const int n = 10;

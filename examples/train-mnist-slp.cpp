@@ -12,6 +12,8 @@
 #include <nn/contrib/graph/layers/dense.hpp>
 #include <nn/contrib/graph/layers/output.hpp>
 
+DEFINE_TRACE_CONTEXTS;
+
 template <typename builder>
 auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
 {

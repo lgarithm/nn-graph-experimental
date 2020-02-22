@@ -2,6 +2,8 @@
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
+DEFINE_TRACE_CONTEXTS;
+
 int main()
 {
     ttl::nn::graph::builder b;

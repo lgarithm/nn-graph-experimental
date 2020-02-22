@@ -4,6 +4,8 @@
 
 #include "utils.hpp"
 
+DEFINE_TRACE_CONTEXTS;
+
 void f(int n)
 {
     TRACE_SCOPE("f");
