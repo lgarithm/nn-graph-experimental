@@ -1,5 +1,6 @@
 FUNCTION(ADD_EXAMPLE target)
     ADD_EXECUTABLE(${target} ${ARGN})
+    TARGET_USE_STDTRACER(${target})
     TARGET_USE_STDTENSOR(${target})
     TARGET_USE_STDNN_OPS(${target})
     IF(${ENABLE_CUDA})
