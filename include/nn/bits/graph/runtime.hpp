@@ -55,22 +55,19 @@ class runtime
 template <typename D>
 class basic_runtime : public runtime
 {
-    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
-    using raw_tensor_view = ttl::experimental::raw_tensor_view;
-
   protected:
     variable_manager<D> vm_;
 
-    std::map<key_t, variable *> vars_;
-    std::map<key_t, reference *> binds_;
+    std::map<key_t, variable<D> *> vars_;
+    std::map<key_t, reference<D> *> binds_;
 
     template <typename R, rank_t r>
     ttl::tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
-            return binds_.at(key)->template as<R, r, D>().get();
+            return binds_.at(key)->template as<R, r>().get();
         } else {
-            return vars_.at(key)->template as<R, r, D>().get();
+            return vars_.at(key)->template as<R, r>().get();
         }
     }
 
@@ -100,7 +97,7 @@ class basic_runtime : public runtime
     template <typename R, rank_t r>
     void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
     {
-        binds_.at(key)->template as<R, r, D>().bind(t);
+        binds_.at(key)->template as<R, r>().bind(t);
     }
 
     void unbind(key_t key) { binds_.at(key)->unbind(); }
@@ -117,7 +114,7 @@ class basic_runtime : public runtime
         return get<R, r>(key);
     }
 
-    raw_tensor_ref get_raw_ref(key_t key) const
+    raw_tensor_ref<D> get_raw_ref(key_t key) const
     {
         // FIXME: handle ttl::cuda_memory
         if (binds_.count(key) > 0) {
@@ -127,9 +124,9 @@ class basic_runtime : public runtime
         }
     }
 
-    raw_tensor_view get_raw_view(key_t key) const
+    raw_tensor_view<D> get_raw_view(key_t key) const
     {
-        return raw_tensor_view(get_raw_ref(key));
+        return raw_tensor_view<D>(get_raw_ref(key));
     }
 
     template <typename F, typename Outputs, typename Inputs>

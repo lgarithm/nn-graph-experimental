@@ -1,42 +1,26 @@
 // -*- mode: c++ -*-
 #pragma once
+#include <nn/bits/graph/tensor.hpp>
 #include <ttl/nn/bits/ops/blas.hpp>
 #include <ttl/range>
 #include <ttl/tensor>
 
 namespace stdml
 {
-template <typename R, ttl::rank_t r>
-void learn(const ttl::tensor_ref<R, r> &x, const ttl::tensor_view<R, r> &g,
-           const R lr)
+template <typename R, ttl::rank_t r, typename D>
+void learn(const ttl::tensor_ref<R, r, D> &x,
+           const ttl::tensor_view<R, r, D> &g, const R lr)
 {
-    ttl::tensor<R, 0> a;
-    ttl::ref(a) = -lr;
+    ttl::tensor<R, 0, D> a;
+    (ttl::nn::ops::constant<R>(-lr))(ttl::ref(a));
     ttl::nn::ops::axpy()(x, ttl::view(a), g, ttl::view(x));
 }
 
-template <typename R>
-void learn(const ttl::experimental::raw_tensor_ref &x,
-           const ttl::experimental::raw_tensor_view &g, const R lr)
+template <typename R, typename D>
+void learn(const ttl::nn::graph::internal::raw_tensor_ref<D> &x,
+           const ttl::nn::graph::internal::raw_tensor_view<D> &g, const R lr)
 {
     learn(ttl::flatten(x.template typed<R>()),
           ttl::flatten(g.template typed<R>()), lr);
-}
-
-template <typename F, typename... Args>
-void batch_invoke(const int batch_size, const F &f, const Args &... args)
-{
-    const int n = std::get<0>(std::get<0>(std::make_tuple(args...)).dims());
-    for (auto i : ttl::range(n / batch_size)) {
-        f(args.slice(i * batch_size, (i + 1) * batch_size)...);
-    }
-}
-
-template <typename F, typename Rx, ttl::rank_t rx, typename Ry, ttl::rank_t ry>
-void batch_train(const ttl::tensor_view<Rx, rx> &xs,
-                 const ttl::tensor_view<Ry, ry> &y_s,  //
-                 const F &f, const int batch_size = 1, const int epochs = 1)
-{
-    for (auto e : ttl::range(epochs)) { batch_invoke(batch_size, f, xs, y_s); }
 }
 }  // namespace stdml

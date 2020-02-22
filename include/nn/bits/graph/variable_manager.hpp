@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <nn/bits/graph/common.hpp>
-#include <ttl/experimental/raw_tensor>
+#include <nn/bits/graph/tensor.hpp>
 #include <ttl/shape>
 #include <ttl/tensor>
 
@@ -17,22 +17,16 @@ class tensor_variable;
 template <typename R, rank_t r, typename D>
 class tensor_reference;
 
+template <typename D>
 class variable
 {
-  protected:
-    // FIXME: use std encoding
-    using raw_tensor = ttl::experimental::raw_tensor;
-    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
-    using raw_tensor_view = ttl::experimental::raw_tensor_view;
-    using scalar_encoder = typename raw_tensor::encoder_type;
-
   public:
     virtual ~variable() {}
 
-    virtual raw_tensor_ref raw_ref() const = 0;
-    virtual raw_tensor_view raw_view() const = 0;
+    virtual raw_tensor_ref<D> raw_ref() const = 0;
+    virtual raw_tensor_view<D> raw_view() const = 0;
 
-    template <typename R, rank_t r, typename D>
+    template <typename R, rank_t r>
     tensor_variable<R, r, D> &as()
     {
         return *down_cast<tensor_variable<R, r, D>>(this);
@@ -44,7 +38,7 @@ class variable
 };
 
 template <typename R, rank_t r, typename D>
-class tensor_variable : public variable
+class tensor_variable : public variable<D>
 {
     using T = ttl::tensor<R, r, D>;
     using Ref = ttl::tensor_ref<R, r, D>;
@@ -56,18 +50,17 @@ class tensor_variable : public variable
 
     Ref get() const { return Ref(value_); }
 
-    raw_tensor_ref raw_ref() const override
+    raw_tensor_ref<D> raw_ref() const override
     {
-        // FIXME: handle D = cuda_memory
-        return raw_tensor_ref(value_.data(), scalar_encoder::value<R>(),
-                              value_.shape());
+        return raw_tensor_ref<D>(value_.data(), idx_encoder::value<R>(),
+                                 value_.shape());
     }
 
-    raw_tensor_view raw_view() const override
+    raw_tensor_view<D> raw_view() const override
     {
         // FIXME: handle D = cuda_memory
-        return raw_tensor_view(value_.data(), scalar_encoder::value<R>(),
-                               value_.shape());
+        return raw_tensor_view<D>(value_.data(), idx_encoder::value<R>(),
+                                  value_.shape());
     }
 
     size_t data_size() const override { return value_.data_size(); }
@@ -78,24 +71,18 @@ class tensor_variable : public variable
     }
 };
 
+template <typename D>
 class reference
 {
-  protected:
-    // FIXME: use std encoding
-    using raw_tensor = ttl::experimental::raw_tensor;
-    using raw_tensor_ref = ttl::experimental::raw_tensor_ref;
-    using raw_tensor_view = ttl::experimental::raw_tensor_view;
-    using scalar_encoder = typename raw_tensor::encoder_type;
-
   public:
     virtual ~reference() {}
 
     virtual void unbind() = 0;
 
-    virtual raw_tensor_ref raw_ref() const = 0;
-    virtual raw_tensor_view raw_view() const = 0;
+    virtual raw_tensor_ref<D> raw_ref() const = 0;
+    virtual raw_tensor_view<D> raw_view() const = 0;
 
-    template <typename R, rank_t r, typename D>
+    template <typename R, rank_t r>
     tensor_reference<R, r, D> &as()
     {
         return *down_cast<tensor_reference<R, r, D>>(this);
@@ -103,7 +90,7 @@ class reference
 };
 
 template <typename R, rank_t r, typename D>
-class tensor_reference : public reference
+class tensor_reference : public reference<D>
 {
     using Ref = ttl::tensor_ref<R, r, D>;
 
@@ -130,35 +117,33 @@ class tensor_reference : public reference
 
     Ref get() const { return value_.value(); }
 
-    raw_tensor_ref raw_ref() const override
+    raw_tensor_ref<D> raw_ref() const override
     {
-        // FIXME: handle D = cuda_memory
         const auto &value = value_.value();
-        return raw_tensor_ref(value.data(), scalar_encoder::value<R>(),
-                              value.shape());
+        return raw_tensor_ref<D>(value.data(), idx_encoder::value<R>(),
+                                 value.shape());
     }
 
-    raw_tensor_view raw_view() const override
+    raw_tensor_view<D> raw_view() const override
     {
-        // FIXME: handle D = cuda_memory
         const auto &value = value_.value();
-        return raw_tensor_view(value.data(), scalar_encoder::value<R>(),
-                               value.shape());
+        return raw_tensor_view<D>(value.data(), idx_encoder::value<R>(),
+                                  value.shape());
     }
 };
 
 template <typename D>
 class variable_manager
 {
-    std::vector<std::unique_ptr<variable>> variables_;
-    std::vector<std::unique_ptr<reference>> references_;
+    std::vector<std::unique_ptr<variable<D>>> variables_;
+    std::vector<std::unique_ptr<reference<D>>> references_;
 
   public:
     template <typename R, rank_t r>
     tensor_variable<R, r, D> *create_tensor(const ttl::shape<r> &shape)
     {
         auto v = new tensor_variable<R, r, D>(shape);
-        variables_.push_back(std::unique_ptr<variable>(v));
+        variables_.emplace_back(v);
         return v;
     }
 
@@ -167,7 +152,7 @@ class variable_manager
     create_tensor_reference(const ttl::shape<r> &shape)
     {
         auto tr = new tensor_reference<R, r, D>(shape);
-        references_.push_back(std::unique_ptr<reference>(tr));
+        references_.emplace_back(tr);
         return tr;
     }
 };
