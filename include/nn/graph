@@ -5,7 +5,6 @@
 
 #include <nn/bits/graph/builder.hpp>
 #include <nn/bits/graph/device.hpp>
-#include <nn/bits/graph/optimizer.hpp>
 #include <nn/bits/graph/runtime.hpp>
 
 namespace ttl::nn::graph
@@ -19,7 +18,6 @@ using builder = internal::builder<runtime>;
 using gpu_builder = internal::builder<gpu_runtime>;
 using var_node = internal::base_var_node;
 using internal::op_node;
-using internal::optimizer;
 
 using internal::cpu;
 using internal::nvidia_gpu;
