@@ -53,7 +53,9 @@ struct cuda_op {
 }  // namespace ttl::nn
 
 #ifdef NN_GRAPH_ENABLE_CUDA
+#    include <ttl/nn/bits/ops/gradients/activation.hpp>
 #    include <ttl/nn/bits/ops/gradients/bias.hpp>
+#    include <ttl/nn/bits/ops/gradients/conv2d.hpp>
 #    include <ttl/nn/bits/ops/gradients/matmul.hpp>
 #    include <ttl/nn/bits/ops/gradients/mul.hpp>
 #    include <ttl/nn/bits/ops/gradients/reshape.hpp>
@@ -170,6 +172,20 @@ struct cuda_op<ttl::nn::ops::grad::add_bias<ttl::nn::ops::nhwc, p>> {
 template <arity_t p>
 struct cuda_op<ttl::nn::ops::grad::matmul<p>> {
     using type = ttl::nn::ops::grad::matmul<p>;
+};
+
+/*
+template <arity_t p>
+struct cuda_op<
+    ttl::nn::ops::grad::conv<ttl::nn::traits::nhwc, ttl::nn::traits::rscd, p>> {
+    using type = ttl::nn::ops::grad::conv<ttl::nn::traits::nhwc,
+                                          ttl::nn::traits::rscd, p>;
+};
+*/
+
+template <>
+struct cuda_op<ttl::nn::ops::grad::relu<0>> {
+    using type = ttl::nn::cuda::ops::grad::relu<0>;
 };
 
 template <>
