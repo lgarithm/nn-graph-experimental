@@ -92,4 +92,5 @@ void train_mnist(int epoches, int batch_size,                           //
                                             test_labels, xs, y_s, accuracy);
                   show_accuracy(acc, epoch + 1, step + 1);
               });
+    printf("train finished\n");
 }
