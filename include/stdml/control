@@ -16,6 +16,15 @@ void learn(const ttl::tensor_ref<R, r, D> &x,
     ttl::nn::ops::axpy()(x, ttl::view(a), g, ttl::view(x));
 }
 
+#ifndef NN_GRAPH_ENABLE_CUDA
+template <typename R, ttl::rank_t r>
+void learn(const ttl::cuda_tensor_ref<R, r> &x,
+           const ttl::cuda_tensor_view<R, r> &g, const R lr)
+{
+    printf("cuda not enabled!\n");
+}
+#endif
+
 template <typename R, typename D>
 void learn(const ttl::nn::graph::internal::raw_tensor_ref<D> &x,
            const ttl::nn::graph::internal::raw_tensor_view<D> &g, const R lr)
