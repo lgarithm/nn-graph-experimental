@@ -20,8 +20,10 @@ auto cnn(builder &b, const internal::var_node<R, 4> *x, const shape<2> &ksize,
          int n_filters)
 {
     conv_layer<> l(ksize, n_filters);
-    ops::constant<R> kernel_init(0.1);
-    ops::constant<R> bias_init(0);
+    // ops::constant<R> kernel_init(0.1);
+    // ops::constant<R> bias_init(0);
+    ops::readtar kernel_init("cnn-init.tidx", "conv2d/kernel:0");
+    ops::readtar bias_init("cnn-init.tidx", "conv2d/bias:0");
     return l.apply<R>(b, x, kernel_init, bias_init);
 }
 
@@ -29,8 +31,10 @@ template <typename R, typename builder>
 auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
 {
     dense_layer l(logits);
-    ops::constant<R> weight_init(0.1);
-    ops::constant<R> bias_init(0);
+    // ops::constant<R> weight_init(0.1);
+    // ops::constant<R> bias_init(0);
+    ops::readtar weight_init("cnn-init.tidx", "dense/kernel:0");
+    ops::readtar bias_init("cnn-init.tidx", "dense/bias:0");
     return l.apply<R>(b, x, weight_init, bias_init);
 }
 }  // namespace ttl::nn::graph::layers
