@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 
-#include <nn/bits/graph/symbol.hpp>
+#include <ttl/nn/bits/graph/symbol.hpp>
 
 namespace ttl::nn::graph::internal
 {

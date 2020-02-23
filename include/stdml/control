@@ -1,0 +1,37 @@
+// -*- mode: c++ -*-
+#pragma once
+#include <ttl/cuda_tensor>
+#include <ttl/nn/bits/graph/tensor.hpp>
+#include <ttl/nn/bits/ops/blas.hpp>
+#include <ttl/nn/bits/ops/init.hpp>
+#include <ttl/range>
+#include <ttl/tensor>
+
+namespace stdml
+{
+template <typename R, ttl::rank_t r, typename D>
+void learn(const ttl::tensor_ref<R, r, D> &x,
+           const ttl::tensor_view<R, r, D> &g, const R lr)
+{
+    ttl::tensor<R, 0, D> a;
+    (ttl::nn::ops::constant<R>(-lr))(ttl::ref(a));
+    ttl::nn::ops::axpy()(x, ttl::view(a), g, ttl::view(x));
+}
+
+#ifndef NN_GRAPH_ENABLE_CUDA
+template <typename R, ttl::rank_t r>
+void learn(const ttl::cuda_tensor_ref<R, r> &x,
+           const ttl::cuda_tensor_view<R, r> &g, const R lr)
+{
+    printf("cuda not enabled!\n");
+}
+#endif
+
+template <typename R, typename D>
+void learn(const ttl::nn::graph::internal::raw_tensor_ref<D> &x,
+           const ttl::nn::graph::internal::raw_tensor_view<D> &g, const R lr)
+{
+    learn(ttl::flatten(x.template typed<R>()),
+          ttl::flatten(g.template typed<R>()), lr);
+}
+}  // namespace stdml

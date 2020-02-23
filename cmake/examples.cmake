@@ -1,13 +1,8 @@
-FIND_PACKAGE(stdtracer REQUIRED)
-
-ADD_LIBRARY(trace ${CMAKE_SOURCE_DIR}/examples/trace.cpp)
-TARGET_USE_STDTRACER(trace)
-
 FUNCTION(ADD_EXAMPLE target)
     ADD_EXECUTABLE(${target} ${ARGN})
+    TARGET_USE_STDTRACER(${target})
     TARGET_USE_STDTENSOR(${target})
     TARGET_USE_STDNN_OPS(${target})
-    TARGET_LINK_LIBRARIES(${target} trace)
     IF(${ENABLE_CUDA})
         TARGET_LINK_LIBRARIES(${target} cudart)
         TARGET_USE_CUNN_OPS(${target})

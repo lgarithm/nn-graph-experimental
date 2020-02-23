@@ -7,11 +7,11 @@
 #include <iostream>
 #include <sstream>
 
-#include <nn/bits/graph/common.hpp>
-#include <nn/bits/graph/device.hpp>
+#include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/device.hpp>
 
 #if NN_GRAPG_TRACE
-#    include <nn/bits/graph/trace.hpp>
+#    include <ttl/nn/bits/graph/trace.hpp>
 #endif
 
 namespace ttl::nn::graph::internal
@@ -43,24 +43,11 @@ std::string apply_name(const F &f, const std::tuple<Args...> &args,
     }
 }
 
-template <typename>
-struct traced_apply;
-template <>
-struct traced_apply<cpu> {
+struct traced_apply {
     template <typename F, typename... Args>
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
         TRACE_SCOPE(apply_name(f, args, true));
-        std::apply(f, args);
-    }
-};
-
-template <>
-struct traced_apply<nvidia_gpu> {
-    template <typename F, typename... Args>
-    void operator()(const F &f, const std::tuple<Args...> &args) const
-    {
-        TRACE_CUDA_SCOPE(apply_name(f, args, true));
         std::apply(f, args);
     }
 };
@@ -94,7 +81,7 @@ struct maybe_apply<D, true> {
     void operator()(const F &f, const std::tuple<Args...> &args) const
     {
 #if NN_GRAPG_TRACE
-        traced_apply<D>()(f, args);
+        traced_apply()(f, args);
 #else
         std::apply(f, args);
 #endif

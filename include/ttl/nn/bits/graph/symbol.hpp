@@ -1,5 +1,5 @@
 #pragma once
-#include <nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/shape>
 
 namespace ttl::nn::graph::internal

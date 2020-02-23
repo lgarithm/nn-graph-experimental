@@ -3,15 +3,14 @@
 #include <optional>
 #include <vector>
 
-#include <nn/bits/graph/common.hpp>
-#include <nn/bits/graph/cuda_ops.hpp>
-#include <nn/bits/graph/device.hpp>
-#include <nn/bits/graph/execution.hpp>
-#include <nn/bits/graph/gradient_descent.hpp>
-#include <nn/bits/graph/operator.hpp>
-#include <nn/bits/graph/runtime.hpp>
-#include <nn/gradients>
 #include <ttl/cuda_tensor>
+#include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/cuda_ops.hpp>
+#include <ttl/nn/bits/graph/device.hpp>
+#include <ttl/nn/bits/graph/execution.hpp>
+#include <ttl/nn/bits/graph/operator.hpp>
+#include <ttl/nn/bits/graph/runtime.hpp>
+#include <ttl/nn/gradients>
 #include <ttl/tensor>
 
 namespace ttl::nn::graph::internal
@@ -100,9 +99,6 @@ class base_var_node : public node
         using V = var_node<R, r>;
         return const_cast<V *>(down_cast<V>(this));
     }
-
-    virtual op_node *apply_gradients(const var_node_list_t &gs,
-                                     const base_var_node *lr) const = 0;
 };
 
 template <typename R, ttl::rank_t r>
@@ -167,17 +163,6 @@ class var_node : public base_var_node
     ttl::cuda_tensor_view<R, r> get_view(gpu_runtime &rt) const
     {
         return rt.get_view<R, r>(this);
-    }
-
-    op_node *apply_gradients(const var_node_list_t &gs,
-                             const base_var_node *lr) const override
-    {
-        std::vector<const node *> deps(gs.size());
-        std::copy(gs.begin(), gs.end(), deps.begin());
-        auto eta = lr->as<R, 0>();
-        return new op_node("apply_grad",  //
-                           gradient_descent<cpu>()(this, gs, eta),
-                           gradient_descent<nvidia_gpu>()(this, gs, eta), deps);
     }
 };
 

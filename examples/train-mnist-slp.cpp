@@ -1,7 +1,8 @@
-#include <nn/graph>
 #include <ttl/algorithm>
 #include <ttl/experimental/copy>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/experimental/datasets>
+#include <ttl/nn/graph/layers>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
@@ -9,8 +10,21 @@
 #include "trace.hpp"
 #include "trainer.hpp"
 #include "utils.hpp"
-#include <nn/contrib/graph/layers/dense.hpp>
-#include <nn/contrib/graph/layers/output.hpp>
+#include <ttl/nn/contrib/graph/layers/output.hpp>
+
+DEFINE_TRACE_CONTEXTS;
+
+namespace ttl::nn::graph::layers
+{
+template <typename R, typename builder>
+auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
+{
+    dense_layer l(logits);
+    ttl::nn::ops::constant<R> weight_init(0.5);
+    ttl::nn::ops::zeros bias_init;
+    return l.apply<R>(b, x, weight_init, bias_init);
+}
+}  // namespace ttl::nn::graph::layers
 
 template <typename builder>
 auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
@@ -22,8 +36,8 @@ auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
         b.template var<float>("images", b.shape(batch_size, input_size));
     auto labels =
         b.template var<float>("onehot-labels", b.shape(batch_size, logits));
-    auto [l1, w1, b1] = dense(b, images, logits);
-    auto [loss, accuracy] = classification_output(b, l1, labels);
+    auto l1 = dense(b, images, logits);
+    auto [loss, accuracy] = classification_output(b, *l1, labels);
     return std::make_tuple(images, labels, loss, accuracy);
 }
 
@@ -34,8 +48,7 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    ttl::nn::graph::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.5);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::runtime rt;
     b.build(rt);
@@ -58,7 +71,7 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy);
+                test_labels, xs, y_s, gvs, accuracy);
 }
 
 template <typename T>
@@ -76,8 +89,7 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     const auto [xs, y_s, loss, accuracy] =
         create_slp_model(b, 28 * 28, batch_size, 10);
 
-    ttl::nn::graph::optimizer opt;
-    auto f = opt.minimize(b, loss, 0.5);
+    auto gvs = b.gradients(loss);
 
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
@@ -105,7 +117,7 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     }();
 
     train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, f, accuracy, do_test);
+                test_labels, xs, y_s, gvs, accuracy, do_test);
 }
 
 void show_args(int argc, char *argv[])

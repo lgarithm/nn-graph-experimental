@@ -61,6 +61,10 @@ parse_args() {
         --enable-trace)
             ENABLE_TRACE=1
             ;;
+        --with-cuda=*)
+            CUDA_HOME="${i#*=}"
+            echo "configure --with-cuda=$CUDA_HOME"
+            ;;
         --verbose)
             VERBOSE=1
             ;;

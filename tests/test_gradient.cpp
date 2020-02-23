@@ -1,6 +1,6 @@
 #include "testing.hpp"
 
-#include <nn/graph>
+#include <ttl/nn/computation_graph>
 
 TEST(gradient_test, test1)
 {

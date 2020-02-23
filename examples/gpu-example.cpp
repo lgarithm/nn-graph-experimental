@@ -1,7 +1,7 @@
 // #define NN_GRAPG_TRACE 1
 
-#include <nn/graph>
 #include <ttl/experimental/copy>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 

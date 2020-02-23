@@ -1,8 +1,10 @@
-#include <nn/graph>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "utils.hpp"
+
+DEFINE_TRACE_CONTEXTS;
 
 void f(int n)
 {
@@ -15,7 +17,7 @@ void f(int n)
     for (auto i : ttl::range(n + 1)) { vars.at(i).resize(n + 1 - i); }
 
     for (auto i : ttl::range(n + 1)) {
-        for (auto j [[maybe_unused]] : ttl::range(n + 1 - i)) {
+        for (auto j[[maybe_unused]] : ttl::range(n + 1 - i)) {
             char name[32];
             sprintf(name, "x[%d][%d]", i, j);
             if (i == 0) {

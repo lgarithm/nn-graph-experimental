@@ -1,6 +1,6 @@
 #include "testing.hpp"
 
-#include <nn/bits/graph/symbol_manager.hpp>
+#include <ttl/nn/bits/graph/symbol_manager.hpp>
 
 TEST(symbol_test, test1)
 {

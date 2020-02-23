@@ -3,10 +3,10 @@
 #include <iomanip>
 #include <sstream>
 
-#include <nn/bits/graph/apply.hpp>
-#include <nn/bits/graph/cuda_ops.hpp>
 #include <ttl/algorithm>
 #include <ttl/cuda_tensor>
+#include <ttl/nn/bits/graph/apply.hpp>
+#include <ttl/nn/bits/graph/cuda_ops.hpp>
 #include <ttl/nn/ops>
 #include <ttl/range>
 
@@ -93,7 +93,7 @@ class benchmark
         const auto y = make_tensor<D>()(yt);
         const auto xs = std::make_tuple(make_tensor<D>()(xts)...);
         constexpr auto arity = sizeof...(XTs);
-        for (auto i [[gnu::unused]] : ttl::range(60)) {
+        for (auto i[[gnu::unused]] : ttl::range(60)) {
             call_op(Op(), y, xs, std::make_index_sequence<arity>());
         }
     }
