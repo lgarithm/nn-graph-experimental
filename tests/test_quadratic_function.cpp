@@ -1,6 +1,6 @@
 #include "testing.hpp"
 
-#include <stdml/control>
+#include <stdml/experimental/control>
 #include <ttl/nn/computation_graph>
 
 template <typename T1, typename T2>
