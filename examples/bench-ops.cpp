@@ -1,5 +1,5 @@
 #include "bench-utils.hpp"
-#include <nn/graph>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/ops>
 
 DEFINE_TRACE_CONTEXTS;
@@ -17,7 +17,7 @@ void bench_sim()
 
     ttl::cuda_tensor<int32_t, 1> x_data(n);
     ttl::cuda_tensor<int32_t, 1> y_data(n);
-    for (auto i [[gnu::unused]] : ttl::range(60)) {
+    for (auto i[[gnu::unused]] : ttl::range(60)) {
         TRACE_SCOPE("b::sim");
         rt.bind(x, ref(x_data));
         rt.bind(y, ref(y_data));

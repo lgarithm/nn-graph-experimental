@@ -1,7 +1,7 @@
 #include "testing.hpp"
 
-#include <nn/graph>
 #include <stdml/control>
+#include <ttl/nn/computation_graph>
 
 template <typename T1, typename T2>
 std::vector<T1> firsts(const std::vector<std::pair<T1, T2>> &pairs)

@@ -13,8 +13,11 @@ jobs:
 
     - name: install stdtracer
       run: |
+        . ./auto/cmake
+        commit=$(get_dep stdtracer)
         git clone https://github.com/lgarithm/stdtracer.git
         cd stdtracer
+        git checkout $commit
         ./configure --prefix=$HOME/local
         make install
 

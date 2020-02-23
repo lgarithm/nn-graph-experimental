@@ -1,7 +1,9 @@
 // -*- mode: c++ -*-
 #pragma once
+#include <ttl/cuda_tensor>
 #include <ttl/nn/bits/graph/tensor.hpp>
 #include <ttl/nn/bits/ops/blas.hpp>
+#include <ttl/nn/bits/ops/init.hpp>
 #include <ttl/range>
 #include <ttl/tensor>
 

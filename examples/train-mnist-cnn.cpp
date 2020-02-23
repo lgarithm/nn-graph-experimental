@@ -1,6 +1,6 @@
 #include <experimental/zip>
-#include <nn/graph>
 #include <stdml/control>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/nn/ops>
 #include <ttl/tensor>

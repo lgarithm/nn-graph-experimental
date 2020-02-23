@@ -1,6 +1,6 @@
-#include <nn/graph>
 #include <ttl/algorithm>
 #include <ttl/experimental/copy>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/nn/ops>
 #include <ttl/tensor>

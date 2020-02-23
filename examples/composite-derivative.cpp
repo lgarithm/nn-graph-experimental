@@ -4,7 +4,7 @@
     w = u + v
  */
 
-#include <nn/graph>
+#include <ttl/nn/computation_graph>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
