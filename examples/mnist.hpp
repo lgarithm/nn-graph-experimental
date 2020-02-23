@@ -7,7 +7,6 @@
 #include <ttl/tensor>
 
 #include "trace.hpp"
-#include "trainer.hpp"
 #include "utils.hpp"
 
 ttl::tensor<float, 2> prepro(const ttl::tensor_view<uint8_t, 1> &t)
@@ -76,23 +75,23 @@ void train_mnist(int epoches, int batch_size,                           //
     TRACE_SCOPE(__func__);
     TRACE_STMT(rt.debug());
     const auto gs = firsts(gvs);
-    simple_trainer run_train(epoches, batch_size, do_test);
-    run_train(images, labels,
-              [&](int idx, auto xs_data, auto y_s_data) {
-                  TRACE_SCOPE("train batch");
-                  rt.bind(xs, xs_data);
-                  rt.bind(y_s, y_s_data);
-                  b.run(rt, gs);
-                  for (const auto &[g, v] : gvs) {
-                      TRACE_SCOPE("learn");
-                      stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g),
-                                          0.1);
-                  }
-              },
-              [&](int epoch, int step) {
-                  const auto acc = test_all(b, rt, batch_size, test_images,
-                                            test_labels, xs, y_s, accuracy);
-                  show_accuracy(acc, epoch + 1, step + 1);
-              });
+    const float lr = 0.1;
+    for (auto e[[gnu::unused]] : ttl::range(epoches)) {
+        stdml::batch_invoke(batch_size,
+                            [&](auto xs_data, auto y_s_data) {
+                                rt.bind(xs, xs_data);
+                                rt.bind(y_s, y_s_data);
+                                b.run(rt, gs);
+                                for (const auto &[g, v] : gvs) {
+                                    stdml::learn<float>(rt.get_raw_ref(v),
+                                                        rt.get_raw_view(g), lr);
+                                }
+                            },
+                            images, labels);
+    }
     printf("train finished\n");
+    const auto acc = test_all(b, rt, batch_size, test_images, test_labels, xs,
+                              y_s, accuracy);
+    show_accuracy(acc, epoches, 0);
+    printf("test finished\n");
 }

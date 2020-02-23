@@ -8,7 +8,6 @@
 
 #include "mnist.hpp"
 #include "trace.hpp"
-#include "trainer.hpp"
 #include "utils.hpp"
 #include <ttl/nn/contrib/graph/layers/output.hpp>
 
