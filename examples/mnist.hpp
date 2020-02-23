@@ -6,7 +6,6 @@
 #include <ttl/range>
 #include <ttl/tensor>
 
-#include "trace.hpp"
 #include "utils.hpp"
 
 // images -> [batch, h * w]

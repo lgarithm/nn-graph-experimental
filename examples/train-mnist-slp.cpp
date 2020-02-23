@@ -1,15 +1,14 @@
 #include <ttl/algorithm>
 #include <ttl/experimental/copy>
 #include <ttl/nn/computation_graph>
+#include <ttl/nn/contrib/graph/layers/output.hpp>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/nn/graph/layers>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "mnist.hpp"
-#include "trace.hpp"
 #include "utils.hpp"
-#include <ttl/nn/contrib/graph/layers/output.hpp>
 
 DEFINE_TRACE_CONTEXTS;
 

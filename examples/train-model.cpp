@@ -8,8 +8,6 @@
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
-#include "trace.hpp"
-
 DEFINE_TRACE_CONTEXTS;
 
 namespace ttl::nn::graph::layers

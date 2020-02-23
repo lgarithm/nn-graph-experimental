@@ -6,7 +6,7 @@
 #include <ttl/tensor>
 
 #include "mnist.hpp"
-#include "trace.hpp"
+
 #include "utils.hpp"
 
 DEFINE_TRACE_CONTEXTS;

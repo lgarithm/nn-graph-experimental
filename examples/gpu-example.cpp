@@ -5,8 +5,6 @@
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
-#include "trace.hpp"
-
 template <typename T>
 auto make_tensor_like(const T &t)
 {
