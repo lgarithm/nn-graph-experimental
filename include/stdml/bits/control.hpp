@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #pragma once
 #include <ttl/cuda_tensor>
 #include <ttl/nn/bits/graph/tensor.hpp>
@@ -7,7 +6,7 @@
 #include <ttl/range>
 #include <ttl/tensor>
 
-namespace stdml
+namespace stdml::internal
 {
 template <typename R, ttl::rank_t r, typename D>
 void learn(const ttl::tensor_ref<R, r, D> &x,
@@ -53,4 +52,4 @@ int batch_invoke(const int batch_size, const F &f, const Args &... args)
     }
     return n % batch_size;
 }
-}  // namespace stdml
+}  // namespace stdml::internal

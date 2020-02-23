@@ -1,0 +1,9 @@
+// -*- mode: c++ -*-
+#pragma once
+#include <stdml/bits/control.hpp>
+
+namespace stdml
+{
+using internal::batch_invoke;
+using internal::learn;
+}  // namespace stdml

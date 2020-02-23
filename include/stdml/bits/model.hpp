@@ -1,12 +1,11 @@
-// -*- mode: c++ -*-
 #pragma once
-#include <stdml/control>
+#include <stdml/bits/control.hpp>
 #include <ttl/device>
 #include <ttl/nn/computation_graph>
 #include <ttl/shape>
 #include <ttl/tensor>
 
-namespace stdml
+namespace stdml::internal
 {
 namespace
 {
@@ -25,7 +24,7 @@ class basic_supervised_model
 };
 
 template <typename ttl::rank_t r, typename N, typename D = ttl::host_memory>
-class classification_model  // : public basic_supervised_model
+class basic_classification_model  // : public basic_supervised_model
 {
     const ttl::shape<r> input;
     const N n_categories;
@@ -76,7 +75,7 @@ class classification_model  // : public basic_supervised_model
     }
 
   public:
-    classification_model(const ttl::shape<r> &input, const N n_categories)
+    basic_classification_model(const ttl::shape<r> &input, const N n_categories)
         : input(input), n_categories(n_categories)
     {
     }
@@ -104,13 +103,13 @@ class classification_model  // : public basic_supervised_model
     {
         int step = 0;
         for (auto epoch [[gnu::unused]] : ttl::range(epochs))
-            stdml::batch_invoke(
+            batch_invoke(
                 batch_size,
                 [&](const ttl::tensor_view<R, r + 1, D> &samples,
                     const ttl::tensor_view<N, 1, D> &labels) {
                     ++step;
                     const R loss = train_batch(samples, labels);
-                    stdml::learn_all<R>(gvs, rt, 0.1);
+                    learn_all<R>(gvs, rt, 0.1);
                     if (step % 100 == 0) {
                         printf("step %4d, loss: %f\n", step, loss);
                     }
@@ -125,7 +124,7 @@ class classification_model  // : public basic_supervised_model
     {
         int tot_succ = 0;
         int tot_failed = 0;
-        stdml::batch_invoke(
+        batch_invoke(
             batch_size,
             [&](const ttl::tensor_view<R, r + 1, D> &samples,
                 const ttl::tensor_view<N, 1, D> &labels) {
@@ -138,4 +137,4 @@ class classification_model  // : public basic_supervised_model
                percent<float>(tot_succ, tot_succ + tot_failed));
     }
 };
-}  // namespace stdml
+}  // namespace stdml::internal

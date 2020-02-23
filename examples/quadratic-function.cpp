@@ -1,5 +1,5 @@
 #include "utils.hpp"
-#include <stdml/control>
+#include <stdml/experimental/control>
 #include <ttl/nn/computation_graph>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
@@ -26,6 +26,7 @@ void example1()
         std::cerr << "step = " << i << ", 0.8 ^ " << i + 1 << " = " << e
                   << std::endl;
         b.run(rt, gs);
+        stdml::internal::learn_all<float>(gvs, rt, 0.1);
         {
             auto v = y->get_view(rt);
             std::cerr << "y = " << v.data()[0] << std::endl;

@@ -1,5 +1,5 @@
 #pragma once
-#include <stdml/control>
+#include <stdml/experimental/control>
 #include <ttl/experimental/copy>
 #include <ttl/experimental/get>
 #include <ttl/nn/ops>

@@ -1,5 +1,5 @@
 
-#include <stdml/model>
+#include <stdml/experimental/models>
 #include <ttl/algorithm>
 #include <ttl/nn/computation_graph>
 #include <ttl/nn/contrib/graph/layers/output.hpp>
