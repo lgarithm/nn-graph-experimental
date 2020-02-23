@@ -7,15 +7,6 @@
 
 namespace stdml::internal
 {
-namespace
-{
-template <typename R, ttl::rank_t r>
-static ttl::tensor_ref<R, r> force_ref(const ttl::tensor_view<R, r> &t)
-{
-    return ttl::tensor_ref<R, r>(const_cast<R *>(t.data()), t.shape());
-}
-}  // namespace
-
 class basic_supervised_model
 {
   public:
@@ -48,8 +39,8 @@ class basic_classification_model  // : public basic_supervised_model
     R train_batch(const ttl::tensor_view<R, r + 1, D> &samples,
                   const ttl::tensor_view<N, 1, D> &labels)
     {
-        rt.bind(xs, force_ref(samples));
-        rt.bind(y_s, force_ref(labels));
+        rt.bind(xs, samples);
+        rt.bind(y_s, labels);
         b.run(rt, train_step_ops);
         ttl::tensor_view<R, 1> loss =
             rt.get_raw_view(this->loss).template typed<R, 1>();
@@ -60,9 +51,8 @@ class basic_classification_model  // : public basic_supervised_model
     int test_batch(const ttl::tensor_view<R, r + 1, D> &samples,
                    const ttl::tensor_view<N, 1, D> &labels)
     {
-        // FIXME: allow bind tensor_view
-        rt.bind(xs, force_ref(samples));
-        rt.bind(y_s, force_ref(labels));
+        rt.bind(xs, samples);
+        rt.bind(y_s, labels);
         b.run(rt, predictions);
         auto y_out = rt.get_raw_view(predictions).template typed<N, 1>();
         return ttl::hamming_distance(y_out, labels);

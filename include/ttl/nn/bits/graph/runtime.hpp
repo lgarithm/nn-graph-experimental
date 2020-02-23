@@ -100,6 +100,14 @@ class basic_runtime : public runtime
         binds_.at(key)->template as<R, r>().bind(t);
     }
 
+    template <typename R, rank_t r>
+    void bind(key_t key, const ttl::tensor_view<R, r, D> &t)
+    {
+        // FIXME: !
+        ttl::tensor_ref<R, r, D> x(const_cast<R *>(t.data()), t.shape());
+        bind(key, x);
+    }
+
     void unbind(key_t key) { binds_.at(key)->unbind(); }
 
     template <typename R, rank_t r>

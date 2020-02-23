@@ -58,7 +58,6 @@ class tensor_variable : public variable<D>
 
     raw_tensor_view<D> raw_view() const override
     {
-        // FIXME: handle D = cuda_memory
         return raw_tensor_view<D>(value_.data(), idx_encoder::value<R>(),
                                   value_.shape());
     }
