@@ -1,6 +1,6 @@
 // -*- mode: c++ -*-
 #pragma once
-#include <stdml/bits/model.hpp>
+#include <stdml/experimental/bits/model.hpp>
 
 namespace stdml
 {

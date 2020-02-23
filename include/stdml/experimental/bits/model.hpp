@@ -1,5 +1,5 @@
 #pragma once
-#include <stdml/bits/control.hpp>
+#include <stdml/experimental/bits/control.hpp>
 #include <ttl/device>
 #include <ttl/nn/computation_graph>
 #include <ttl/shape>
