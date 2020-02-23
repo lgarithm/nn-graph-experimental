@@ -1,15 +1,13 @@
-#include <experimental/zip>
-#include <stdml/control>
 #include <ttl/nn/computation_graph>
+#include <ttl/nn/contrib/graph/layers/output.hpp>
 #include <ttl/nn/experimental/datasets>
+#include <ttl/nn/graph/layers>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
 
 #include "mnist.hpp"
 #include "trace.hpp"
 #include "utils.hpp"
-#include <ttl/nn/contrib/graph/layers/output.hpp>
-#include <ttl/nn/graph/layers>
 
 DEFINE_TRACE_CONTEXTS;
 
@@ -20,10 +18,10 @@ auto cnn(builder &b, const internal::var_node<R, 4> *x, const shape<2> &ksize,
          int n_filters)
 {
     conv_layer<> l(ksize, n_filters);
-    // ops::constant<R> kernel_init(0.1);
-    // ops::constant<R> bias_init(0);
-    ops::readtar kernel_init("cnn-init.tidx", "conv2d/kernel:0");
-    ops::readtar bias_init("cnn-init.tidx", "conv2d/bias:0");
+    ops::truncated_normal kernel_init(0.1);
+    ops::constant<R> bias_init(0);
+    // ops::readtar kernel_init("cnn-init.tidx", "conv2d/kernel:0");
+    // ops::readtar bias_init("cnn-init.tidx", "conv2d/bias:0");
     return l.apply<R>(b, x, kernel_init, bias_init);
 }
 
@@ -31,10 +29,10 @@ template <typename R, typename builder>
 auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
 {
     dense_layer l(logits);
-    // ops::constant<R> weight_init(0.1);
-    // ops::constant<R> bias_init(0);
-    ops::readtar weight_init("cnn-init.tidx", "dense/kernel:0");
-    ops::readtar bias_init("cnn-init.tidx", "dense/bias:0");
+    ops::truncated_normal weight_init(0.1);
+    ops::constant<R> bias_init(0);
+    // ops::readtar weight_init("cnn-init.tidx", "dense/kernel:0");
+    // ops::readtar bias_init("cnn-init.tidx", "dense/bias:0");
     return l.apply<R>(b, x, weight_init, bias_init);
 }
 }  // namespace ttl::nn::graph::layers
@@ -88,8 +86,11 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     auto test_images = prepro4(test.images);
     auto test_labels = prepro(test.labels);
 
-    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, gvs, accuracy, do_test);
+    train_mnist(epoches, batch_size, b, rt,          //
+                ttl::ref(images), ttl::ref(labels),  //
+                ttl::ref(test_images),
+                ttl::ref(test_labels),  //
+                xs, y_s, gvs, accuracy, do_test);
 }
 
 template <typename T>
@@ -129,8 +130,10 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     auto test_images = make_cuda_tensor_from(ttl::view(test_images_cpu));
     auto test_labels = make_cuda_tensor_from(ttl::view(test_labels_cpu));
 
-    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, gvs, accuracy, do_test);
+    train_mnist(epoches, batch_size, b, rt,                    //
+                ttl::ref(images), ttl::ref(labels),            //
+                ttl::ref(test_images), ttl::ref(test_labels),  //
+                xs, y_s, gvs, accuracy, do_test);
 }
 
 int main(int argc, char *argv[])

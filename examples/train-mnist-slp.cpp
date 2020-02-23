@@ -70,8 +70,10 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
                                std::move(test_images), std::move(test_labels));
     }();
 
-    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, gvs, accuracy);
+    train_mnist(epoches, batch_size, b, rt,                    //
+                ttl::ref(images), ttl::ref(labels),            //
+                ttl::ref(test_images), ttl::ref(test_labels),  //
+                xs, y_s, gvs, accuracy);
 }
 
 template <typename T>
@@ -116,8 +118,10 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
                                std::move(test_images), std::move(test_labels));
     }();
 
-    train_mnist(epoches, batch_size, b, rt, images, labels, test_images,
-                test_labels, xs, y_s, gvs, accuracy, do_test);
+    train_mnist(epoches, batch_size, b, rt,                    //
+                ttl::ref(images), ttl::ref(labels),            //
+                ttl::ref(test_images), ttl::ref(test_labels),  //
+                xs, y_s, gvs, accuracy);
 }
 
 void show_args(int argc, char *argv[])

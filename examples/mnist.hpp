@@ -47,15 +47,17 @@ float test_all(const builder &b, RT &rt,  //
 {
     TRACE_SCOPE(__func__);
     std::vector<float> accs;
-    simple_data_iterator run_epoch(batch_size);
-    run_epoch(images, labels, [&](int /* idx */, auto xs_data, auto y_s_data) {
-        TRACE_SCOPE("test batch");
-        rt.bind(xs, xs_data);
-        rt.bind(y_s, y_s_data);
-        b.run(rt, accuracy);
-        auto result = accuracy->as<float, 0>()->get_view(rt);
-        accs.push_back(ttl::get(result));
-    });
+    stdml::batch_invoke(batch_size,
+                        [&](auto xs_data, auto y_s_data) {
+                            TRACE_SCOPE("test batch");
+                            rt.bind(xs, xs_data);
+                            rt.bind(y_s, y_s_data);
+                            b.run(rt, accuracy);
+                            auto result =
+                                accuracy->as<float, 0>()->get_view(rt);
+                            accs.push_back(ttl::get(result));
+                        },
+                        images, labels);
     return ttl::mean(ttl::tensor_view<float, 1>(accs.data(), accs.size()));
 }
 

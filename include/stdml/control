@@ -34,4 +34,14 @@ void learn(const ttl::nn::graph::internal::raw_tensor_ref<D> &x,
     learn(ttl::flatten(x.template typed<R>()),
           ttl::flatten(g.template typed<R>()), lr);
 }
+
+template <typename F, typename... Args>
+int batch_invoke(const int batch_size, const F &f, const Args &... args)
+{
+    const int n = std::get<0>(std::get<0>(std::make_tuple(args...)).dims());
+    for (auto i : ttl::range(n / batch_size)) {
+        f(args.slice(i * batch_size, (i + 1) * batch_size)...);
+    }
+    return n % batch_size;
+}
 }  // namespace stdml
