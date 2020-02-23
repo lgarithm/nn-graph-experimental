@@ -1,7 +1,7 @@
 #pragma once
-#include <nn/bits/graph/cuda_ops.hpp>
-#include <nn/bits/graph/node.hpp>
-#include <nn/bits/graph/operator.hpp>
+#include <ttl/nn/bits/graph/cuda_ops.hpp>
+#include <ttl/nn/bits/graph/node.hpp>
+#include <ttl/nn/bits/graph/operator.hpp>
 #include <ttl/nn/bits/ops/init.hpp>
 
 namespace ttl::nn::graph::internal

@@ -3,7 +3,7 @@
 
 #include <ttl/nn/ops>
 
-#include <nn/bits/graph/builder.hpp>
+#include <ttl/nn/bits/graph/builder.hpp>
 
 namespace ttl::nn::graph::layers
 {

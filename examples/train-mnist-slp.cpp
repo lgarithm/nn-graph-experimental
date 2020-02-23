@@ -9,8 +9,8 @@
 #include "trace.hpp"
 #include "trainer.hpp"
 #include "utils.hpp"
-#include <nn/contrib/graph/layers/dense.hpp>
-#include <nn/contrib/graph/layers/output.hpp>
+#include <ttl/nn/contrib/graph/layers/dense.hpp>
+#include <ttl/nn/contrib/graph/layers/output.hpp>
 
 DEFINE_TRACE_CONTEXTS;
 

@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include <nn/bits/graph/common.hpp>
-#include <nn/bits/graph/tensor.hpp>
+#include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/tensor.hpp>
 #include <ttl/shape>
 #include <ttl/tensor>
 

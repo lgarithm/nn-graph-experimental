@@ -5,12 +5,12 @@
 #include <queue>
 #include <vector>
 
-#include <nn/bits/graph/back_propagation.hpp>
-#include <nn/bits/graph/cuda_ops.hpp>
-#include <nn/bits/graph/execution.hpp>
-#include <nn/bits/graph/node.hpp>
-#include <nn/bits/graph/runtime.hpp>
-#include <nn/bits/graph/symbol_manager.hpp>
+#include <ttl/nn/bits/graph/back_propagation.hpp>
+#include <ttl/nn/bits/graph/cuda_ops.hpp>
+#include <ttl/nn/bits/graph/execution.hpp>
+#include <ttl/nn/bits/graph/node.hpp>
+#include <ttl/nn/bits/graph/runtime.hpp>
+#include <ttl/nn/bits/graph/symbol_manager.hpp>
 #include <ttl/nn/bits/ops/elementary.hpp>
 #include <ttl/nn/bits/ops/init.hpp>
 #include <ttl/tensor>

@@ -1,6 +1,6 @@
 // -*- mode: c++ -*-
 #pragma once
-#include <nn/bits/graph/tensor.hpp>
+#include <ttl/nn/bits/graph/tensor.hpp>
 #include <ttl/nn/bits/ops/blas.hpp>
 #include <ttl/range>
 #include <ttl/tensor>

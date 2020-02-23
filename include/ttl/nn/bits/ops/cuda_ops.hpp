@@ -1,7 +1,7 @@
 #pragma once
 #include <experimental/reflect>
 
-#include <nn/bits/graph/device.hpp>
+#include <ttl/nn/bits/graph/device.hpp>
 
 namespace ttl::nn
 {

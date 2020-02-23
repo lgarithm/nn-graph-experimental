@@ -1,8 +1,8 @@
 #include <experimental/zip>
 #include <iostream>
 
-#include <nn/bits/graph/common.hpp>
 #include <ttl/debug>
+#include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/range>
 

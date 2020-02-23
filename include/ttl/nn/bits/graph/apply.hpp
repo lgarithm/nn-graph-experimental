@@ -7,11 +7,11 @@
 #include <iostream>
 #include <sstream>
 
-#include <nn/bits/graph/common.hpp>
-#include <nn/bits/graph/device.hpp>
+#include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/device.hpp>
 
 #if NN_GRAPG_TRACE
-#    include <nn/bits/graph/trace.hpp>
+#    include <ttl/nn/bits/graph/trace.hpp>
 #endif
 
 namespace ttl::nn::graph::internal

@@ -3,14 +3,14 @@
 #include <optional>
 #include <vector>
 
-#include <nn/bits/graph/common.hpp>
-#include <nn/bits/graph/cuda_ops.hpp>
-#include <nn/bits/graph/device.hpp>
-#include <nn/bits/graph/execution.hpp>
-#include <nn/bits/graph/operator.hpp>
-#include <nn/bits/graph/runtime.hpp>
-#include <nn/gradients>
 #include <ttl/cuda_tensor>
+#include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/cuda_ops.hpp>
+#include <ttl/nn/bits/graph/device.hpp>
+#include <ttl/nn/bits/graph/execution.hpp>
+#include <ttl/nn/bits/graph/operator.hpp>
+#include <ttl/nn/bits/graph/runtime.hpp>
+#include <ttl/nn/gradients>
 #include <ttl/tensor>
 
 namespace ttl::nn::graph::internal

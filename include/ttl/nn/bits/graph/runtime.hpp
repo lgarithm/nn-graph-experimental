@@ -5,9 +5,9 @@
 #include <ttl/experimental/show_size>
 #include <ttl/shape>
 
-#include <nn/bits/graph/apply.hpp>
-#include <nn/bits/graph/variable_manager.hpp>
-#include <nn/bits/tuple.hpp>
+#include <ttl/nn/bits/graph/apply.hpp>
+#include <ttl/nn/bits/graph/variable_manager.hpp>
+#include <ttl/nn/bits/tuple.hpp>
 
 namespace ttl::nn::graph::internal
 {

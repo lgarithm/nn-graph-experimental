@@ -1,7 +1,7 @@
 #include "testing.hpp"
 
-#include <nn/bits/graph/variable_manager.hpp>
 #include <ttl/device>
+#include <ttl/nn/bits/graph/variable_manager.hpp>
 
 TEST(variable_manager_test, test1)
 {
