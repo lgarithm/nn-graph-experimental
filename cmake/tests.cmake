@@ -2,6 +2,7 @@ INCLUDE(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
 
 FUNCTION(ADD_GTEST target)
     ADD_EXECUTABLE(${target} ${ARGN} tests/main.cpp)
+    TARGET_USE_STDTRACER(${target})
     TARGET_USE_STDTENSOR(${target})
     TARGET_USE_STDNN_OPS(${target})
     TARGET_USE_GTEST(${target})
