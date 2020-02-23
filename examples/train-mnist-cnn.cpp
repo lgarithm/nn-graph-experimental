@@ -8,11 +8,32 @@
 #include "mnist.hpp"
 #include "trace.hpp"
 #include "utils.hpp"
-#include <ttl/nn/contrib/graph/layers/conv.hpp>
-#include <ttl/nn/contrib/graph/layers/dense.hpp>
 #include <ttl/nn/contrib/graph/layers/output.hpp>
+#include <ttl/nn/graph/layers>
 
 DEFINE_TRACE_CONTEXTS;
+
+namespace ttl::nn::graph::layers
+{
+template <typename R, typename builder>
+auto cnn(builder &b, const internal::var_node<R, 4> *x, const shape<2> &ksize,
+         int n_filters)
+{
+    conv_layer<> l(ksize, n_filters);
+    ops::constant<R> kernel_init(0.1);
+    ops::constant<R> bias_init(0);
+    return l.apply<R>(b, x, kernel_init, bias_init);
+}
+
+template <typename R, typename builder>
+auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
+{
+    dense_layer l(logits);
+    ops::constant<R> weight_init(0.1);
+    ops::constant<R> bias_init(0);
+    return l.apply<R>(b, x, weight_init, bias_init);
+}
+}  // namespace ttl::nn::graph::layers
 
 template <typename builder>
 auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
@@ -29,16 +50,13 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
         "images", b.shape(batch_size, height, width, channel));
     auto labels =
         b.template var<float>("onehot-labels", b.shape(batch_size, logits));
-    auto [l1, w1, b1] = cnn(b, images, b.shape(3, 3), 32);
-    auto l2 = b.template invoke<float>("conv_act", ttl::nn::ops::relu(), l1);
-    // auto [l2, w2, b2] = cnn(b, l1, b.shape(3, 3), 32);
+    auto l1 = cnn(b, images, b.shape(3, 3), 32);
+    auto l2 = b.template invoke<float>("conv_act", ttl::nn::ops::relu(), *l1);
 
     auto cnn_flat = b.template invoke<float>(
         "cnn_flat", ttl::nn::ops::copy_flatten<1, 3>(), l2);
-
-    auto [l_out, w3, b3] = dense(b, cnn_flat, logits);
-    auto [loss, accuracy] = classification_output(b, l_out, labels);
-
+    auto l_out = dense(b, cnn_flat, logits);
+    auto [loss, accuracy] = classification_output(b, *l_out, labels);
     return std::make_tuple(images, labels, loss, accuracy);
 }
 
