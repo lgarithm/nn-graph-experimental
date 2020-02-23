@@ -12,7 +12,7 @@ class conv_layer
     using bias_op = ops::add_bias<image_order>;
 
     const ttl::shape<2> &ksize;
-    int n_filters;
+    const int n_filters;
 
   public:
     conv_layer(const ttl::shape<2> &ksize, int n_filters)
@@ -28,9 +28,9 @@ class conv_layer
     {
         const auto [r, s] = ksize.dims();
         const auto [n, h, w, c] = x->shape().dims();
-        auto kernel = b.template covar<R>(
-            "kernel", make_shape(r, s, c, n_filters), w_init);
-        auto bias = b.template covar<R>("bias", make_shape(n_filters), b_init);
+        auto kernel =
+            b.template covar<R>("kernel", b.shape(r, s, c, n_filters), w_init);
+        auto bias = b.template covar<R>("bias", b.shape(n_filters), b_init);
         auto y = b.template invoke<R>("conv", conv_op(), x, kernel);
         auto z = b.template invoke<R>("conv_bias", bias_op(), y, bias);
         return simple_layer(z, kernel, bias);

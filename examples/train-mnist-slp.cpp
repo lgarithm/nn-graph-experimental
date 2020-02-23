@@ -19,24 +19,23 @@ template <typename R, typename builder>
 auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
 {
     dense_layer l(logits);
-    ttl::nn::ops::constant<R> weight_init(0.5);
-    ttl::nn::ops::zeros bias_init;
+    ops::constant<R> weight_init(0.5);
+    ops::zeros bias_init;
     return l.apply<R>(b, x, weight_init, bias_init);
 }
 }  // namespace ttl::nn::graph::layers
 
-template <typename builder>
+template <typename R, typename builder>
 auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
 {
     TRACE_SCOPE(__func__);
     using ttl::nn::graph::layers::classification_output;
     using ttl::nn::graph::layers::dense;
-    auto images =
-        b.template var<float>("images", b.shape(batch_size, input_size));
-    auto labels =
-        b.template var<float>("onehot-labels", b.shape(batch_size, logits));
+    auto images = b.template var<R>("images", b.shape(batch_size, input_size));
+    auto labels = b.template var<uint8_t>("labels", b.shape(batch_size));
     auto l1 = dense(b, images, logits);
-    auto [loss, accuracy] = classification_output(b, *l1, labels);
+    auto [predictions, loss, accuracy] =
+        classification_output<uint8_t>(b, *l1, labels, logits);
     return std::make_tuple(images, labels, loss, accuracy);
 }
 
@@ -45,7 +44,7 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     TRACE_SCOPE(__func__);
     ttl::nn::graph::builder b;
     const auto [xs, y_s, loss, accuracy] =
-        create_slp_model(b, 28 * 28, batch_size, 10);
+        create_slp_model<float>(b, 28 * 28, batch_size, 10);
 
     auto gvs = b.gradients(loss);
 
@@ -53,25 +52,15 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     b.build(rt);
     b.init(rt);
 
-    const auto [images, labels, test_images, test_labels] = [&] {
-        TRACE_SCOPE("prepro");
-        using nn::experimental::datasets::load_mnist_data;
-        const std::string home(std::getenv("HOME"));
-        const std::string prefix = home + "/var/data/mnist";
-        const auto train = load_mnist_data(prefix, "train");
-        const auto test = load_mnist_data(prefix, "t10k");
+    using nn::experimental::datasets::load_mnist_data;
+    const std::string home(std::getenv("HOME"));
+    const std::string prefix = home + "/var/data/mnist";
+    const auto train = load_mnist_data(prefix, "train");
+    const auto test = load_mnist_data(prefix, "t10k");
 
-        auto images = prepro2(train.images);
-        auto labels = prepro(train.labels);
-        auto test_images = prepro2(test.images);
-        auto test_labels = prepro(test.labels);
-        return std::make_tuple(std::move(images), std::move(labels),
-                               std::move(test_images), std::move(test_labels));
-    }();
-
-    train_mnist(epoches, batch_size, b, rt,                    //
-                ttl::ref(images), ttl::ref(labels),            //
-                ttl::ref(test_images), ttl::ref(test_labels),  //
+    train_mnist(epoches, batch_size, b, rt,                               //
+                ttl::ref(prepro2(train.images)), ttl::ref(train.labels),  //
+                ttl::ref(prepro2(test.images)), ttl::ref(test.labels),    //
                 xs, y_s, gvs, accuracy);
 }
 
@@ -88,7 +77,7 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     TRACE_SCOPE(__func__);
     ttl::nn::graph::gpu_builder b;
     const auto [xs, y_s, loss, accuracy] =
-        create_slp_model(b, 28 * 28, batch_size, 10);
+        create_slp_model<float>(b, 28 * 28, batch_size, 10);
 
     auto gvs = b.gradients(loss);
 
@@ -96,26 +85,16 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     b.build(rt);
     b.init(rt);
 
-    const auto [images, labels, test_images, test_labels] = [&] {
-        TRACE_SCOPE("prepro");
-        using nn::experimental::datasets::load_mnist_data;
-        const std::string home(std::getenv("HOME"));
-        const std::string prefix = home + "/var/data/mnist";
-        const auto train = load_mnist_data(prefix, "train");
-        const auto test = load_mnist_data(prefix, "t10k");
+    using nn::experimental::datasets::load_mnist_data;
+    const std::string home(std::getenv("HOME"));
+    const std::string prefix = home + "/var/data/mnist";
+    const auto train = load_mnist_data(prefix, "train");
+    const auto test = load_mnist_data(prefix, "t10k");
 
-        auto images_cpu = prepro2(train.images);
-        auto labels_cpu = prepro(train.labels);
-        auto test_images_cpu = prepro2(test.images);
-        auto test_labels_cpu = prepro(test.labels);
-
-        auto images = make_cuda_tensor_from(view(images_cpu));
-        auto labels = make_cuda_tensor_from(view(labels_cpu));
-        auto test_images = make_cuda_tensor_from(view(test_images_cpu));
-        auto test_labels = make_cuda_tensor_from(view(test_labels_cpu));
-        return std::make_tuple(std::move(images), std::move(labels),
-                               std::move(test_images), std::move(test_labels));
-    }();
+    auto images = make_cuda_tensor_from(ttl::view(prepro2(train.images)));
+    auto labels = make_cuda_tensor_from(ttl::view(train.labels));
+    auto test_images = make_cuda_tensor_from(ttl::view(prepro2(test.images)));
+    auto test_labels = make_cuda_tensor_from(ttl::view(test.labels));
 
     train_mnist(epoches, batch_size, b, rt,                    //
                 ttl::ref(images), ttl::ref(labels),            //

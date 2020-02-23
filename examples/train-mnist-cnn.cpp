@@ -37,7 +37,7 @@ auto dense(builder &b, const internal::var_node<R, 2> *x, int logits)
 }
 }  // namespace ttl::nn::graph::layers
 
-template <typename builder>
+template <typename R, typename builder>
 auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
                       int batch_size, int logits)
 {
@@ -48,17 +48,17 @@ auto create_cnn_model(builder &b, const ttl::shape<3> &image_shape,
     using ttl::nn::graph::layers::dense;
 
     const auto [height, width, channel] = image_shape.dims();
-    auto images = b.template var<float>(
+    auto images = b.template var<R>(
         "images", b.shape(batch_size, height, width, channel));
-    auto labels =
-        b.template var<float>("onehot-labels", b.shape(batch_size, logits));
+    auto labels = b.template var<uint8_t>("onehot", b.shape(batch_size));
     auto l1 = cnn(b, images, b.shape(3, 3), 32);
-    auto l2 = b.template invoke<float>("conv_act", ttl::nn::ops::relu(), *l1);
+    auto l2 = b.template invoke<R>("conv_act", ttl::nn::ops::relu(), *l1);
 
-    auto cnn_flat = b.template invoke<float>(
+    auto cnn_flat = b.template invoke<R>(
         "cnn_flat", ttl::nn::ops::copy_flatten<1, 3>(), l2);
     auto l_out = dense(b, cnn_flat, logits);
-    auto [loss, accuracy] = classification_output(b, *l_out, labels);
+    auto [predictions, loss, accuracy] =
+        classification_output<uint8_t>(b, *l_out, labels, logits);
     return std::make_tuple(images, labels, loss, accuracy);
 }
 
@@ -67,7 +67,7 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     TRACE_SCOPE(__func__);
     ttl::nn::graph::builder b;
     const auto [xs, y_s, loss, accuracy] =
-        create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
+        create_cnn_model<float>(b, b.shape(28, 28, 1), batch_size, 10);
 
     auto gvs = b.gradients(loss);
 
@@ -81,15 +81,9 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     const auto train = load_mnist_data(prefix, "train");
     const auto test = load_mnist_data(prefix, "t10k");
 
-    auto images = prepro4(train.images);
-    auto labels = prepro(train.labels);
-    auto test_images = prepro4(test.images);
-    auto test_labels = prepro(test.labels);
-
-    train_mnist(epoches, batch_size, b, rt,          //
-                ttl::ref(images), ttl::ref(labels),  //
-                ttl::ref(test_images),
-                ttl::ref(test_labels),  //
+    train_mnist(epoches, batch_size, b, rt,                               //
+                ttl::ref(prepro4(train.images)), ttl::ref(train.labels),  //
+                ttl::ref(prepro4(test.images)), ttl::ref(test.labels),    //
                 xs, y_s, gvs, accuracy, do_test);
 }
 
@@ -106,7 +100,7 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     TRACE_SCOPE(__func__);
     ttl::nn::graph::gpu_builder b;
     const auto [xs, y_s, loss, accuracy] =
-        create_cnn_model(b, b.shape(28, 28, 1), batch_size, 10);
+        create_cnn_model<float>(b, b.shape(28, 28, 1), batch_size, 10);
 
     auto gvs = b.gradients(loss);
 
@@ -120,15 +114,10 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     const auto train = load_mnist_data(prefix, "train");
     const auto test = load_mnist_data(prefix, "t10k");
 
-    auto images_cpu = prepro4(train.images);
-    auto labels_cpu = prepro(train.labels);
-    auto test_images_cpu = prepro4(test.images);
-    auto test_labels_cpu = prepro(test.labels);
-
-    auto images = make_cuda_tensor_from(ttl::view(images_cpu));
-    auto labels = make_cuda_tensor_from(ttl::view(labels_cpu));
-    auto test_images = make_cuda_tensor_from(ttl::view(test_images_cpu));
-    auto test_labels = make_cuda_tensor_from(ttl::view(test_labels_cpu));
+    auto images = make_cuda_tensor_from(ttl::view(prepro4(train.images)));
+    auto labels = make_cuda_tensor_from(ttl::view(train.labels));
+    auto test_images = make_cuda_tensor_from(ttl::view(prepro4(test.images)));
+    auto test_labels = make_cuda_tensor_from(ttl::view(test.labels));
 
     train_mnist(epoches, batch_size, b, rt,                    //
                 ttl::ref(images), ttl::ref(labels),            //
