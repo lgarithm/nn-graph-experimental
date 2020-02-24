@@ -2,6 +2,7 @@
 #include <stdml/experimental/control>
 #include <ttl/experimental/copy>
 #include <ttl/experimental/get>
+#include <ttl/nn/cuda_ops>
 #include <ttl/nn/ops>
 #include <ttl/range>
 #include <ttl/tensor>
@@ -33,7 +34,7 @@ float test_all(const builder &b, RT &rt,  //
                int batch_size, const Images &images, const Labels &labels,
                const ttl::nn::graph::var_node *xs,
                const ttl::nn::graph::var_node *y_s,
-               const ttl::nn::graph::var_node *accuracy)
+               const ttl::nn::graph::var_node *predications)
 {
     TRACE_SCOPE(__func__);
     std::vector<float> accs;
@@ -43,9 +44,11 @@ float test_all(const builder &b, RT &rt,  //
             TRACE_SCOPE("test batch");
             rt.bind(xs, xs_data);
             rt.bind(y_s, y_s_data);
-            b.run(rt, accuracy);
-            auto result = accuracy->as<float, 0>()->get_view(rt);
-            accs.push_back(ttl::get(result));
+            b.run(rt, predications);
+            auto result = rt.template view<uint8_t, 1>(predications);
+            ttl::tensor<float, 0, typename Images::device_type> acc;
+            ttl::nn::ops::similarity()(ttl::ref(acc), y_s_data, result);
+            accs.push_back(ttl::get(ttl::view(acc)));
         },
         images, labels);
     return ttl::mean(ttl::tensor_view<float, 1>(accs.data(), accs.size()));
@@ -61,28 +64,26 @@ void train_mnist(int epoches, int batch_size,                           //
                  const std::vector<std::pair<const ttl::nn::graph::var_node *,
                                              const ttl::nn::graph::var_node *>>
                      gvs,
-                 const ttl::nn::graph::var_node *accuracy, bool do_test = true)
+                 const ttl::nn::graph::var_node *predications,
+                 bool do_test = true)
 {
     TRACE_SCOPE(__func__);
     TRACE_STMT(rt.debug());
     const auto gs = firsts(gvs);
     const float lr = 0.1;
-    for (auto e [[gnu::unused]] : ttl::range(epoches)) {
-        stdml::batch_invoke(
-            batch_size,
-            [&](auto xs_data, auto y_s_data) {
-                rt.bind(xs, xs_data);
-                rt.bind(y_s, y_s_data);
-                b.run(rt, gs);
-                for (const auto &[g, v] : gvs) {
-                    stdml::learn<float>(rt.ref(v), rt.view(g), lr);
-                }
-            },
-            images, labels);
+    for (auto e[[gnu::unused]] : ttl::range(epoches)) {
+        stdml::batch_invoke(batch_size,
+                            [&](auto xs_data, auto y_s_data) {
+                                rt.bind(xs, xs_data);
+                                rt.bind(y_s, y_s_data);
+                                b.run(rt, gs);
+                                stdml::internal::learn_all<float>(gvs, rt, lr);
+                            },
+                            images, labels);
     }
     printf("train finished\n");
     const auto acc = test_all(b, rt, batch_size, test_images, test_labels, xs,
-                              y_s, accuracy);
+                              y_s, predications);
     show_accuracy(acc, epoches, 0);
     printf("test finished\n");
 }

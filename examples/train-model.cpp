@@ -2,7 +2,6 @@
 #include <stdml/experimental/models>
 #include <ttl/algorithm>
 #include <ttl/nn/computation_graph>
-#include <ttl/nn/contrib/graph/layers/output.hpp>
 #include <ttl/nn/experimental/datasets>
 #include <ttl/nn/graph/layers>
 #include <ttl/nn/ops>
@@ -41,9 +40,8 @@ auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
     auto sample = b.template var<R>("sample", b.shape(batch_size, input_size));
     auto labels = b.template var<uint8_t>("labels", b.shape(batch_size));
     auto l1 = dense(b, sample, logits);
-    auto [predictions, loss, accuracy] =
-        classification_output<uint8_t, R>(b, *l1, labels, logits);
-    return std::make_tuple(sample, labels, predictions, loss, accuracy);
+    auto [predictions, loss] = classification_output()(b, *l1, labels);
+    return std::make_tuple(sample, labels, predictions, loss);
 }
 
 void slp_model()
