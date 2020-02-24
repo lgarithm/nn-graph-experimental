@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <ttl/debug>
 #include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/tensor.hpp>
 #include <ttl/shape>
@@ -103,11 +104,8 @@ class tensor_reference : public reference<D>
     void bind(const Ref &t)
     {
         if (t.shape() != shape_) {
-            throw std::logic_error("tensor_reference"
-                                   "::"
-                                   "bind"
-                                   ": "
-                                   " invalid shape");
+            throw std::invalid_argument(to_string(t.shape()) +
+                                        " != " + to_string(shape_));
         }
         value_.emplace(t);
     }
