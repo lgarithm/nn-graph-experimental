@@ -42,9 +42,7 @@ class basic_classification_model  // : public basic_supervised_model
         rt.bind(xs, samples);
         rt.bind(y_s, labels);
         b.run(rt, train_step_ops);
-        ttl::tensor_view<R, 1> loss =
-            rt.get_raw_view(this->loss).template typed<R, 1>();
-        return ttl::mean(loss);
+        return ttl::mean(rt.view<R, 1>(this->loss));
     }
 
     template <typename R>
@@ -54,7 +52,7 @@ class basic_classification_model  // : public basic_supervised_model
         rt.bind(xs, samples);
         rt.bind(y_s, labels);
         b.run(rt, predictions);
-        auto y_out = rt.get_raw_view(predictions).template typed<N, 1>();
+        auto y_out = rt.view<N, 1>(predictions);
         return ttl::hamming_distance(y_out, labels);
     }
 
@@ -81,7 +79,6 @@ class basic_classification_model  // : public basic_supervised_model
                    v->name().c_str());
             train_step_ops.push_back(g);
         }
-        // train_step_ops.push_back(accuracy);
         b.build(rt);
         b.init(rt);
     }

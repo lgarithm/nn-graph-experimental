@@ -75,8 +75,7 @@ void train_mnist(int epoches, int batch_size,                           //
                 rt.bind(y_s, y_s_data);
                 b.run(rt, gs);
                 for (const auto &[g, v] : gvs) {
-                    stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g),
-                                        lr);
+                    stdml::learn<float>(rt.ref(v), rt.view(g), lr);
                 }
             },
             images, labels);

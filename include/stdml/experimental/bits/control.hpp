@@ -38,9 +38,7 @@ template <typename R /* explicit */, typename Pairs, typename RT,
           typename R1 /* auto */>
 void learn_all(const Pairs &gvs, const RT &rt, const R1 lr)
 {
-    for (const auto &[g, v] : gvs) {
-        learn<R>(rt.get_raw_ref(v), rt.get_raw_view(g), lr);
-    }
+    for (const auto &[g, v] : gvs) { learn<R>(rt.ref(v), rt.view(g), lr); }
 }
 
 template <typename F, typename... Args>

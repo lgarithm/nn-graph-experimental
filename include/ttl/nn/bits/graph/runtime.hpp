@@ -24,7 +24,7 @@ struct _get_ref {
     {
         using R = typename Node::value_type;
         constexpr auto r = Node::rank;
-        return rt->template get_ref<R, r>(key);
+        return rt->template ref<R, r>(key);
     }
 };
 
@@ -39,7 +39,7 @@ struct _get_view {
     {
         using R = typename Node::value_type;
         constexpr auto r = Node::rank;
-        return rt->template get_view<R, r>(key);
+        return rt->template view<R, r>(key);
     }
 };
 
@@ -111,18 +111,18 @@ class basic_runtime : public runtime
     void unbind(key_t key) { binds_.at(key)->unbind(); }
 
     template <typename R, rank_t r>
-    ttl::tensor_ref<R, r, D> get_ref(key_t key) const
+    ttl::tensor_ref<R, r, D> ref(key_t key) const
     {
         return get<R, r>(key);
     }
 
     template <typename R, rank_t r>
-    ttl::tensor_view<R, r, D> get_view(key_t key) const
+    ttl::tensor_view<R, r, D> view(key_t key) const
     {
         return get<R, r>(key);
     }
 
-    raw_tensor_ref<D> get_raw_ref(key_t key) const
+    raw_tensor_ref<D> ref(key_t key) const
     {
         // FIXME: handle ttl::cuda_memory
         if (binds_.count(key) > 0) {
@@ -132,9 +132,9 @@ class basic_runtime : public runtime
         }
     }
 
-    raw_tensor_view<D> get_raw_view(key_t key) const
+    raw_tensor_view<D> view(key_t key) const
     {
-        return raw_tensor_view<D>(get_raw_ref(key));
+        return raw_tensor_view<D>(ref(key));
     }
 
     template <typename F, typename Outputs, typename Inputs>

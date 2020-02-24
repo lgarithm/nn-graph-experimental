@@ -31,11 +31,7 @@ TEST(quad_test, test1)
     for (int i = 0; i < 10; ++i) {
         e *= 0.8;
         b.run(rt, gs);
-
-        for (auto &[g, v] : gvs) {
-            stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g), 0.1);
-        }
-
+        stdml::internal::learn_all<float>(gvs, rt, 0.1);
         auto v = x->get_view(rt);
         ASSERT_FLOAT_EQ(v.data()[0], e);
     }
