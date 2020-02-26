@@ -95,30 +95,6 @@ class basic_runtime : public runtime
         return t;
     }
 
-    // /*
-    template <typename R, rank_t r>
-    auto create(const ttl::shape<r> &shape, key_t key)
-    {
-        if (vars_.count(key) > 0) {
-            throw std::logic_error("duplicated creation");
-        }
-        auto t = vm_.template create_tensor<R>(shape);
-        vars_[key] = t;
-        return t;
-    }
-
-    template <typename R, rank_t r>
-    auto define(const ttl::shape<r> &shape, key_t key)
-    {
-        if (binds_.count(key) > 0) {
-            throw std::logic_error("duplicated definition");
-        }
-        auto t = vm_.template create_tensor_reference<R, r>(shape);
-        binds_[key] = t;
-        return t;
-    }
-    // */
-
     template <typename R, rank_t r>
     void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
     {

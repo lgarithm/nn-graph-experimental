@@ -86,21 +86,6 @@ class base_var_node : public node
     virtual tensor_symbol symbol() const = 0;
 
     virtual std::string str() const = 0;
-
-    virtual void create(cpu_runtime &rt) const = 0;
-
-    virtual void define(cpu_runtime &rt) const = 0;
-
-    virtual void create(gpu_runtime &rt) const = 0;
-
-    virtual void define(gpu_runtime &rt) const = 0;
-
-    template <typename R, ttl::rank_t r>
-    var_node<R, r> *as() const
-    {
-        using V = var_node<R, r>;
-        return const_cast<V *>(down_cast<V>(this));
-    }
 };
 
 template <typename R, ttl::rank_t r>
@@ -141,14 +126,6 @@ class var_node : public base_var_node
     {
         return new var_node(shape_, name);
     }
-
-    void create(cpu_runtime &rt) const override { rt.create<R>(shape_, this); }
-
-    void define(cpu_runtime &rt) const override { rt.define<R>(shape_, this); }
-
-    void create(gpu_runtime &rt) const override { rt.create<R>(shape_, this); }
-
-    void define(gpu_runtime &rt) const override { rt.define<R>(shape_, this); }
 
     ttl::shape<r> shape() const { return shape_; }
 
