@@ -3,11 +3,11 @@
 
 #include <ttl/experimental/raw_tensor>
 #include <ttl/experimental/show_size>
-#include <ttl/shape>
-
 #include <ttl/nn/bits/graph/apply.hpp>
+#include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/variable_manager.hpp>
 #include <ttl/nn/bits/tuple.hpp>
+#include <ttl/shape>
 
 namespace ttl::nn::graph::internal
 {
@@ -65,9 +65,9 @@ class basic_runtime : public runtime
     ttl::tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
-            return binds_.at(key)->template as<R, r>().get();
+            return binds_.at(key)->raw_ref().template typed<R, r>();
         } else {
-            return vars_.at(key)->template as<R, r>().get();
+            return vars_.at(key)->raw_ref().template typed<R, r>();
         }
     }
 
@@ -75,6 +75,27 @@ class basic_runtime : public runtime
     using device_type = D;
     static constexpr D device = default_device<D>::value;
 
+    auto create(const tensor_symbol &sym, key_t key)
+    {
+        if (vars_.count(key) > 0) {
+            throw std::logic_error("duplicated creation");
+        }
+        auto t = vm_.create_tensor(sym);
+        vars_[key] = t;
+        return t;
+    }
+
+    auto define(const tensor_symbol &sym, key_t key)
+    {
+        if (binds_.count(key) > 0) {
+            throw std::logic_error("duplicated definition");
+        }
+        auto t = vm_.create_tensor_reference(sym);
+        binds_[key] = t;
+        return t;
+    }
+
+    // /*
     template <typename R, rank_t r>
     auto create(const ttl::shape<r> &shape, key_t key)
     {
@@ -96,11 +117,14 @@ class basic_runtime : public runtime
         binds_[key] = t;
         return t;
     }
+    // */
 
     template <typename R, rank_t r>
     void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
     {
-        binds_.at(key)->template as<R, r>().bind(t);
+        ttl::tensor_view<R, r, D> vv(t);
+        raw_tensor_view<D> v(vv);
+        binds_.at(key)->bind(v);
     }
 
     template <typename R, rank_t r>

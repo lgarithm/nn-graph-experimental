@@ -10,7 +10,6 @@
 #include <ttl/nn/bits/graph/execution.hpp>
 #include <ttl/nn/bits/graph/node.hpp>
 #include <ttl/nn/bits/graph/runtime.hpp>
-#include <ttl/nn/bits/graph/symbol_manager.hpp>
 #include <ttl/nn/bits/ops/elementary.hpp>
 #include <ttl/nn/bits/ops/init.hpp>
 #include <ttl/tensor>
@@ -226,9 +225,9 @@ class builder : public base_builder
   public:
     void build(RT &rt) const
     {
-        for (const auto v : covars_) { v->create(rt); }
-        for (const auto v : tmp_vars_) { v->create(rt); }
-        for (const auto v : vars_) { v->define(rt); }
+        for (const auto v : covars_) { rt.create(v->symbol(), v); }
+        for (const auto v : tmp_vars_) { rt.create(v->symbol(), v); }
+        for (const auto v : vars_) { rt.define(v->symbol(), v); }
     }
 
     void init(RT &rt) const

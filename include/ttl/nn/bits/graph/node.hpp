@@ -83,6 +83,8 @@ class base_var_node : public node
 
     virtual base_var_node *dup(const std::string &name) const = 0;
 
+    virtual tensor_symbol symbol() const = 0;
+
     virtual std::string str() const = 0;
 
     virtual void create(cpu_runtime &rt) const = 0;
@@ -119,6 +121,11 @@ class var_node : public base_var_node
     }
 
     const std::string &name() const override { return name_; }
+
+    tensor_symbol symbol() const override
+    {
+        return tensor_symbol(tensor_symbol::type<R>(), flat_shape(shape_));
+    }
 
     std::string str() const override
     {
