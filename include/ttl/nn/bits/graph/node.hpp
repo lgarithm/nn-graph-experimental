@@ -86,6 +86,13 @@ class base_var_node : public node
     virtual tensor_symbol symbol() const = 0;
 
     virtual std::string str() const = 0;
+
+    template <typename R, rank_t r>
+    var_node<R, r> *typed() const
+    {
+        using V = var_node<R, r>;
+        return const_cast<V *>(down_cast<V>(this));
+    }
 };
 
 template <typename R, ttl::rank_t r>
@@ -129,6 +136,7 @@ class var_node : public base_var_node
 
     ttl::shape<r> shape() const { return shape_; }
 
+    // /*
     ttl::tensor_ref<R, r> get_ref(cpu_runtime &rt) const
     {
         return rt.ref<R, r>(this);
@@ -148,6 +156,7 @@ class var_node : public base_var_node
     {
         return rt.view<R, r>(this);
     }
+    // */
 };
 
 class base_func_node : public node

@@ -26,9 +26,9 @@ int main()
 
     b.run(rt, gs);
     {
-        auto gx = gs.at(0)->as<float, 0>()->get_view(rt);
+        auto gx = rt.view<float, 0>(gs.at(0));
         std::cerr << "gx[0] = " << gx.data()[0] << std::endl;
-        auto gy = gs.at(1)->as<float, 0>()->get_view(rt);
+        auto gy = rt.view<float, 0>(gs.at(1));
         std::cerr << "gy[0] = " << gy.data()[0] << std::endl;
     }
 
