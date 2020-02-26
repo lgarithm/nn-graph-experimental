@@ -2,7 +2,7 @@
 #include <stdml/experimental/control>
 #include <ttl/experimental/copy>
 #include <ttl/experimental/get>
-#include <ttl/nn/cuda_ops>
+// #include <ttl/nn/cuda_ops>
 #include <ttl/nn/ops>
 #include <ttl/range>
 #include <ttl/tensor>
@@ -47,7 +47,9 @@ float test_all(const builder &b, RT &rt,  //
             b.run(rt, predications);
             auto result = rt.template view<uint8_t, 1>(predications);
             ttl::tensor<float, 0, typename Images::device_type> acc;
-            ttl::nn::ops::similarity()(ttl::ref(acc), y_s_data, result);
+            ttl::nn::graph::internal::invoke(RT::device,
+                                             ttl::nn::ops::similarity(),
+                                             ttl::ref(acc), y_s_data, result);
             accs.push_back(ttl::get(ttl::view(acc)));
         },
         images, labels);
@@ -71,15 +73,16 @@ void train_mnist(int epoches, int batch_size,                           //
     TRACE_STMT(rt.debug());
     const auto gs = firsts(gvs);
     const float lr = 0.1;
-    for (auto e[[gnu::unused]] : ttl::range(epoches)) {
-        stdml::batch_invoke(batch_size,
-                            [&](auto xs_data, auto y_s_data) {
-                                rt.bind(xs, xs_data);
-                                rt.bind(y_s, y_s_data);
-                                b.run(rt, gs);
-                                stdml::internal::learn_all<float>(gvs, rt, lr);
-                            },
-                            images, labels);
+    for (auto e [[gnu::unused]] : ttl::range(epoches)) {
+        stdml::batch_invoke(
+            batch_size,
+            [&](auto xs_data, auto y_s_data) {
+                rt.bind(xs, xs_data);
+                rt.bind(y_s, y_s_data);
+                b.run(rt, gs);
+                stdml::internal::learn_all<float>(gvs, rt, lr);
+            },
+            images, labels);
     }
     printf("train finished\n");
     const auto acc = test_all(b, rt, batch_size, test_images, test_labels, xs,

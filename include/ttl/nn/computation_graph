@@ -3,6 +3,7 @@
 #include <ttl/nn/bits/kernels/cpu/elementary.hpp>
 #include <ttl/nn/bits/kernels/cpu/init.hpp>
 
+#include <ttl/nn/bits/graph/binding.hpp>
 #include <ttl/nn/bits/graph/builder.hpp>
 #include <ttl/nn/bits/graph/device.hpp>
 #include <ttl/nn/bits/graph/runtime.hpp>

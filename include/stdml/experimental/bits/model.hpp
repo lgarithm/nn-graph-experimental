@@ -38,9 +38,11 @@ class basic_classification_model  // : public basic_supervised_model
     R train_batch(const ttl::tensor_view<R, r + 1, D> &samples,
                   const ttl::tensor_view<N, 1, D> &labels)
     {
-        rt.bind(xs, samples);
-        rt.bind(y_s, labels);
-        b.run(rt, train_step_ops);
+        {
+            ttl::nn::graph::internal::binding _1(rt, xs, samples);
+            ttl::nn::graph::internal::binding _2(rt, y_s, labels);
+            b.run(rt, train_step_ops);
+        }
         return ttl::mean(rt.view<R, 1>(this->loss));
     }
 
@@ -48,11 +50,12 @@ class basic_classification_model  // : public basic_supervised_model
     int test_batch(const ttl::tensor_view<R, r + 1, D> &samples,
                    const ttl::tensor_view<N, 1, D> &labels)
     {
-        rt.bind(xs, samples);
-        rt.bind(y_s, labels);
-        b.run(rt, predictions);
-        auto y_out = rt.view<N, 1>(predictions);
-        return ttl::hamming_distance(y_out, labels);
+        {
+            ttl::nn::graph::internal::binding _1(rt, xs, samples);
+            ttl::nn::graph::internal::binding _2(rt, y_s, labels);
+            b.run(rt, predictions);
+        }
+        return ttl::hamming_distance(rt.view<N, 1>(predictions), labels);
     }
 
     template <typename R, typename U, typename V>
@@ -88,18 +91,19 @@ class basic_classification_model  // : public basic_supervised_model
                const int batch_size, const int epochs = 1)
     {
         int step = 0;
-        for (auto epoch[[gnu::unused]] : ttl::range(epochs))
-            batch_invoke(batch_size,
-                         [&](const ttl::tensor_view<R, r + 1, D> &samples,
-                             const ttl::tensor_view<N, 1, D> &labels) {
-                             ++step;
-                             const R loss = train_batch(samples, labels);
-                             learn_all<R>(gvs, rt, 0.1);
-                             if (step % 100 == 0) {
-                                 printf("step %4d, loss: %f\n", step, loss);
-                             }
-                         },
-                         samples, labels);
+        for (auto epoch [[gnu::unused]] : ttl::range(epochs))
+            batch_invoke(
+                batch_size,
+                [&](const ttl::tensor_view<R, r + 1, D> &samples,
+                    const ttl::tensor_view<N, 1, D> &labels) {
+                    ++step;
+                    const R loss = train_batch(samples, labels);
+                    learn_all<R>(gvs, rt, 0.1);
+                    if (step % 100 == 0) {
+                        printf("step %4d, loss: %f\n", step, loss);
+                    }
+                },
+                samples, labels);
     }
 
     template <typename R>
@@ -109,14 +113,15 @@ class basic_classification_model  // : public basic_supervised_model
     {
         int tot_succ = 0;
         int tot_failed = 0;
-        batch_invoke(batch_size,
-                     [&](const ttl::tensor_view<R, r + 1, D> &samples,
-                         const ttl::tensor_view<N, 1, D> &labels) {
-                         const int failed = test_batch(samples, labels);
-                         tot_succ += std::get<0>(samples.dims()) - failed;
-                         tot_failed += failed;
-                     },
-                     samples, labels);
+        batch_invoke(
+            batch_size,
+            [&](const ttl::tensor_view<R, r + 1, D> &samples,
+                const ttl::tensor_view<N, 1, D> &labels) {
+                const int failed = test_batch(samples, labels);
+                tot_succ += std::get<0>(samples.dims()) - failed;
+                tot_failed += failed;
+            },
+            samples, labels);
         printf("succ: %d, failed: %d, accuracy: %.2f%%\n", tot_succ, tot_failed,
                percent<float>(tot_succ, tot_succ + tot_failed));
     }

@@ -72,6 +72,9 @@ class basic_runtime : public runtime
     }
 
   public:
+    using device_type = D;
+    static constexpr D device = default_device<D>::value;
+
     template <typename R, rank_t r>
     auto create(const ttl::shape<r> &shape, key_t key)
     {
