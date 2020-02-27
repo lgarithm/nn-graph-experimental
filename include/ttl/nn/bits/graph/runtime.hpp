@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 
+#include <ttl/bits/std_tensor_buffer.hpp>
 #include <ttl/experimental/raw_tensor>
 #include <ttl/experimental/show_size>
 #include <ttl/nn/bits/graph/apply.hpp>
