@@ -15,12 +15,12 @@ int main()
     ttl::nn::graph::runtime rt;
     b.build(rt);
     {
-        ttl::fill(x->get_ref(rt), 1);
-        ttl::fill(y->get_ref(rt), 2);
+        ttl::fill(rt.ref(x), 1);
+        ttl::fill(rt.ref(y), 2);
     }
     b.run(rt, z);
     {
-        auto v = z->get_view(rt);
+        auto v = rt.view(z);
         std::cerr << "z[0] = " << v.data()[0] << std::endl;
     }
     return 0;

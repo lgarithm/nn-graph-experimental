@@ -96,9 +96,8 @@ class base_builder
             using it = typename nn::for_device<Init, nvidia_gpu>::type;
             const it init_g = create_op<it>(init);
             auto i = new op_node(
-                name, [=](basic_runtime<cpu> &rt) { init(n->get_ref(rt)); },
-                [=](basic_runtime<nvidia_gpu> &rt) { init_g(n->get_ref(rt)); },
-                {});
+                name, [=](basic_runtime<cpu> &rt) { init(rt.ref(n)); },
+                [=](basic_runtime<nvidia_gpu> &rt) { init_g(rt.ref(n)); }, {});
             own(i);
             init_ops_.push_back(i);
         }

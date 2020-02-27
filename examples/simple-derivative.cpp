@@ -20,8 +20,8 @@ int main()
     ttl::nn::graph::runtime rt;
     b.build(rt);
     {
-        ttl::fill(x->get_ref(rt), static_cast<float>(1.0));
-        ttl::fill(y->get_ref(rt), static_cast<float>(2.0));
+        ttl::fill(rt.ref(x), static_cast<float>(1.0));
+        ttl::fill(rt.ref(y), static_cast<float>(2.0));
     }
 
     b.run(rt, gs);

@@ -13,6 +13,9 @@ namespace ttl::nn::graph::internal
 {
 class base_var_node;
 
+template <typename R, rank_t r>
+class var_node;
+
 template <typename RT>
 struct _get_ref {
     const RT *rt;
@@ -62,7 +65,7 @@ class basic_runtime : public runtime
     std::map<key_t, reference<D> *> binds_;
 
     template <typename R, rank_t r>
-    ttl::tensor_ref<R, r, D> get(key_t key) const
+    tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
             return binds_.at(key)->raw_ref().template typed<R, r>();
@@ -96,31 +99,31 @@ class basic_runtime : public runtime
     }
 
     template <typename R, rank_t r>
-    void bind(key_t key, const ttl::tensor_ref<R, r, D> &t)
+    void bind(key_t key, const tensor_ref<R, r, D> &t)
     {
-        ttl::tensor_view<R, r, D> vv(t);
+        tensor_view<R, r, D> vv(t);
         raw_tensor_view<D> v(vv);
         binds_.at(key)->bind(v);
     }
 
     template <typename R, rank_t r>
-    void bind(key_t key, const ttl::tensor_view<R, r, D> &t)
+    void bind(key_t key, const tensor_view<R, r, D> &t)
     {
         // FIXME: !
-        ttl::tensor_ref<R, r, D> x(const_cast<R *>(t.data()), t.shape());
+        tensor_ref<R, r, D> x(const_cast<R *>(t.data()), t.shape());
         bind(key, x);
     }
 
     void unbind(key_t key) { binds_.at(key)->unbind(); }
 
     template <typename R, rank_t r>
-    ttl::tensor_ref<R, r, D> ref(key_t key) const
+    tensor_ref<R, r, D> ref(key_t key) const
     {
         return get<R, r>(key);
     }
 
     template <typename R, rank_t r>
-    ttl::tensor_view<R, r, D> view(key_t key) const
+    tensor_view<R, r, D> view(key_t key) const
     {
         return get<R, r>(key);
     }
@@ -133,6 +136,18 @@ class basic_runtime : public runtime
         } else {
             return vars_.at(key)->raw_ref();
         }
+    }
+
+    template <typename R, rank_t r>
+    tensor_ref<R, r, D> ref(const var_node<R, r> *key) const
+    {
+        return get<R, r>(key);
+    }
+
+    template <typename R, rank_t r>
+    tensor_view<R, r, D> view(const var_node<R, r> *key) const
+    {
+        return get<R, r>(key);
     }
 
     raw_tensor_view<D> view(key_t key) const

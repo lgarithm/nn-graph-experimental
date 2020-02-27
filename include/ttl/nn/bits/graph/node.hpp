@@ -135,28 +135,6 @@ class var_node : public base_var_node
     }
 
     ttl::shape<r> shape() const { return shape_; }
-
-    // /*
-    ttl::tensor_ref<R, r> get_ref(cpu_runtime &rt) const
-    {
-        return rt.ref<R, r>(this);
-    }
-
-    ttl::tensor_view<R, r> get_view(cpu_runtime &rt) const
-    {
-        return rt.view<R, r>(this);
-    }
-
-    ttl::cuda_tensor_ref<R, r> get_ref(gpu_runtime &rt) const
-    {
-        return rt.ref<R, r>(this);
-    }
-
-    ttl::cuda_tensor_view<R, r> get_view(gpu_runtime &rt) const
-    {
-        return rt.view<R, r>(this);
-    }
-    // */
 };
 
 class base_func_node : public node
