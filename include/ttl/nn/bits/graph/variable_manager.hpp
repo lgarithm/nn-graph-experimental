@@ -29,9 +29,9 @@ class variable
     {
     }
 
-    raw_tensor_ref<D> raw_ref() const { return raw_tensor_ref<D>(value_); }
+    raw_tensor_ref<D> ref() const { return raw_tensor_ref<D>(value_); }
 
-    raw_tensor_view<D> raw_view() const { return raw_tensor_view<D>(value_); }
+    raw_tensor_view<D> view() const { return raw_tensor_view<D>(value_); }
 
     size_t data_size() const { return value_.data_size(); }
 
@@ -76,9 +76,9 @@ class reference
 
     void unbind() { value_.reset(); }
 
-    raw_tensor_ref<D> raw_ref() const { return value_.value(); }
+    raw_tensor_ref<D> ref() const { return value_.value(); }
 
-    raw_tensor_view<D> raw_view() const
+    raw_tensor_view<D> view() const
     {
         return raw_tensor_view<D>(value_.value());
     }

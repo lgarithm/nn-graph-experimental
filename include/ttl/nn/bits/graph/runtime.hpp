@@ -69,9 +69,9 @@ class basic_runtime : public runtime
     tensor_ref<R, r, D> get(key_t key) const
     {
         if (binds_.count(key) > 0) {
-            return binds_.at(key)->raw_ref().template typed<R, r>();
+            return binds_.at(key)->ref().template typed<R, r>();
         } else {
-            return vars_.at(key)->raw_ref().template typed<R, r>();
+            return vars_.at(key)->ref().template typed<R, r>();
         }
     }
 
@@ -133,9 +133,9 @@ class basic_runtime : public runtime
     {
         // FIXME: handle ttl::cuda_memory
         if (binds_.count(key) > 0) {
-            return binds_.at(key)->raw_ref();
+            return binds_.at(key)->ref();
         } else {
-            return vars_.at(key)->raw_ref();
+            return vars_.at(key)->ref();
         }
     }
 

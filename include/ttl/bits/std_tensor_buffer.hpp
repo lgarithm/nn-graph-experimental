@@ -7,8 +7,8 @@
 
 namespace ttl::internal
 {
-using experimental::flat_tensor_ref;
-using experimental::flat_tensor_view;
+using ttl::experimental::flat_tensor_ref;
+using ttl::experimental::flat_tensor_view;
 
 template <typename R, typename D>
 class basic_tensor_buffer
