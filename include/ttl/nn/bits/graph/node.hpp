@@ -70,7 +70,7 @@ class op_node : public node
     std::vector<const node *> dependencies() const { return dependencies_; }
 };
 
-template <typename R, ttl::rank_t r>
+template <typename R, rank_t r>
 class var_node;
 
 class base_var_node : public node
@@ -95,7 +95,7 @@ class base_var_node : public node
     }
 };
 
-template <typename R, ttl::rank_t r>
+template <typename R, rank_t r>
 class var_node : public base_var_node
 {
     const ttl::shape<r> shape_;
@@ -103,7 +103,7 @@ class var_node : public base_var_node
 
   public:
     using value_type = R;
-    static constexpr ttl::rank_t rank = r;
+    static constexpr rank_t rank = r;
 
     var_node(const var_node &) = delete;
 

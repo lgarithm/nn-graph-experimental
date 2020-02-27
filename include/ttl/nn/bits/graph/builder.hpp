@@ -57,7 +57,7 @@ class base_builder
 
     std::vector<const op_node *> init_ops_;
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *tmp_var(const std::string &name, const ttl::shape<r> &shape)
     {
         auto *n = new var_node<R, r>(shape, name);
@@ -76,7 +76,7 @@ class base_builder
         return ttl::make_shape(d...);
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *var(const std::string &name, const ttl::shape<r> &shape)
     {
         auto *n = new var_node<R, r>(shape, name);
@@ -85,7 +85,7 @@ class base_builder
         return n;
     }
 
-    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
+    template <typename R, rank_t r, typename Init = nn::ops::noop>
     var_node<R, r> *covar(const std::string &name, const ttl::shape<r> &shape,
                           const Init &init = Init())
     {
@@ -104,13 +104,13 @@ class base_builder
         return n;
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *var(const ttl::shape<r> &shape)
     {
         return var<R>("", shape);
     }
 
-    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
+    template <typename R, rank_t r, typename Init = nn::ops::noop>
     var_node<R, r> *covar(const ttl::shape<r> &shape, const Init &init = Init())
     {
         return covar<R>("", shape, init);
@@ -125,7 +125,7 @@ class base_builder
     auto invoke(const std::string &name, const Op &op, const Nodes *... xs)
     {
         const auto shape = op(xs->shape()...);
-        constexpr ttl::rank_t r = decltype(shape)::rank;
+        constexpr rank_t r = decltype(shape)::rank;
         using Node = var_node<R, r>;
         Node *y = tmp_var<R>(name, shape);
         const auto fn = demangled_type_info_name(typeid(op));
@@ -185,7 +185,7 @@ class base_builder
 
     using grad_var_t = std::pair<const base_var_node *, const base_var_node *>;
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     auto gradients(const var_node<R, r> *y)
     {
         const std::set<const base_var_node *> xs(covars_.begin(),
