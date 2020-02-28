@@ -51,6 +51,8 @@ class basic_mixed_tensor_buffer
 
     size_t size() const { return symbols.size(); }
 
+    size_t data_size() const { return buffer.data_size(); }
+
     void *data(int i) { return buffer.data() + offsets.at(i); }
 
     template <typename R>
@@ -73,5 +75,24 @@ class basic_mixed_tensor_buffer
     }
 
     raw_tensor_ref<E, D> operator[](int i) { return ref(i); }
+
+    class iterator
+    {
+        basic_mixed_tensor_buffer *tb;
+        int idx;
+
+      public:
+        iterator(basic_mixed_tensor_buffer *tb, int idx) : tb(tb), idx(idx) {}
+
+        bool operator!=(const iterator &i) const { return idx != i.idx; }
+
+        void operator++() { idx++; }
+
+        raw_tensor_ref<E, D> operator*() { return tb->ref(idx); }
+    };
+
+    iterator begin() { return iterator(this, 0); }
+
+    iterator end() { return iterator(this, symbols.size()); }
 };
 }  // namespace ttl::internal
