@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <ttl/bits/std_tensor_symbol.hpp>
 #include <ttl/debug>
 #include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/tensor.hpp>
@@ -12,6 +13,8 @@
 
 namespace ttl::nn::graph::internal
 {
+using tensor_symbol = ttl::internal::basic_raw_tensor_symbol<idx_encoder>;
+
 template <typename D>
 class variable
 {

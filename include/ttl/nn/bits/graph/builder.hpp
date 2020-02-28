@@ -224,7 +224,17 @@ class builder : public base_builder
   public:
     void build(RT &rt) const
     {
-        for (const auto v : covars_) { rt.create(v->symbol(), v); }
+        using model_buffer_t = typename RT::model_buffer_t;
+        using symbol_t = typename model_buffer_t::symbol_type;
+        std::map<const base_var_node *, int> index;
+        std::vector<symbol_t> symbols;
+        symbols.reserve(covars_.size());
+        for (auto i : range(covars_.size())) {
+            const auto &v = covars_[i];
+            symbols.push_back(v->symbol());
+            index[v] = i;
+        }
+        rt.set_model(new model_buffer_t(index, symbols));
         for (const auto v : tmp_vars_) { rt.create(v->symbol(), v); }
         for (const auto v : vars_) { rt.define(v->symbol(), v); }
     }
@@ -233,11 +243,6 @@ class builder : public base_builder
     {
         for (const auto init : init_ops_) { init->run(rt); }
     }
-
-    // void run(RT &rt, const node *y) const
-    // {
-    //     std::cerr << "[W] TODO:" << std::endl;
-    // }
 
     void _run(RT &rt, execution &e, const base_func_node *f) const
     {

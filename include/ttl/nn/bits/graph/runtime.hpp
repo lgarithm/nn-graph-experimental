@@ -1,11 +1,11 @@
 #pragma once
 #include <map>
 
-#include <ttl/bits/std_tensor_buffer.hpp>
 #include <ttl/experimental/raw_tensor>
 #include <ttl/experimental/show_size>
 #include <ttl/nn/bits/graph/apply.hpp>
 #include <ttl/nn/bits/graph/common.hpp>
+#include <ttl/nn/bits/graph/model_buffer.hpp>
 #include <ttl/nn/bits/graph/variable_manager.hpp>
 #include <ttl/nn/bits/tuple.hpp>
 #include <ttl/shape>
@@ -59,7 +59,14 @@ class runtime
 template <typename D>
 class basic_runtime : public runtime
 {
+    using idx_encoder = std::experimental::basic_type_encoder<
+        ttl::internal::idx_format::encoding>;
+
+  public:
+    using model_buffer_t = basic_model_buffer<key_t, idx_encoder, D>;
+
   protected:
+    std::unique_ptr<model_buffer_t> mb_;
     variable_manager<D> vm_;
 
     std::map<key_t, variable<D> *> vars_;
@@ -70,14 +77,18 @@ class basic_runtime : public runtime
     {
         if (binds_.count(key) > 0) {
             return binds_.at(key)->ref().template typed<R, r>();
-        } else {
+        } else if (vars_.count(key) > 0) {
             return vars_.at(key)->ref().template typed<R, r>();
+        } else {
+            return mb_->template ref<R, r>(key);
         }
     }
 
   public:
     using device_type = D;
     static constexpr D device = default_device<D>::value;
+
+    void set_model(model_buffer_t *mb) { mb_.reset(mb); }
 
     auto create(const tensor_symbol &sym, key_t key)
     {
@@ -134,8 +145,10 @@ class basic_runtime : public runtime
         // FIXME: handle ttl::cuda_memory
         if (binds_.count(key) > 0) {
             return binds_.at(key)->ref();
-        } else {
+        } else if (vars_.count(key) > 0) {
             return vars_.at(key)->ref();
+        } else {
+            return mb_->ref(key);
         }
     }
 
