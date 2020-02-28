@@ -12,10 +12,35 @@ TEST(tensor_buffer_test, test1)
 {
     using S = typename ttl::tensor_buffer<int>::shape_type;
     std::vector<S> shapes;
-    shapes.push_back(S(ttl::make_shape(28, 28, 10)));
+    shapes.emplace_back(ttl::make_shape(28, 28, 10));
     shapes.push_back(S(ttl::make_shape(10)));
     ttl::tensor_buffer<int> tb(shapes);
     ASSERT_EQ(static_cast<int>(tb.size()), 2);
     tb[0].ranked<3>();
     tb[1].ranked<1>();
+}
+
+#include <ttl/bits/mixed_tensor_buffer.hpp>
+
+namespace ttl
+{
+template <typename E, typename D = ttl::host_memory>
+using mixed_tensor_buffer = internal::basic_mixed_tensor_buffer<E, D>;
+
+using idx_encoder =
+    std::experimental::basic_type_encoder<ttl::internal::idx_format::encoding>;
+}  // namespace ttl
+
+TEST(tensor_buffer_test, test2)
+{
+    using tensor_buffer = ttl::mixed_tensor_buffer<ttl::idx_encoder>;
+    using S = typename tensor_buffer::symbol_type;
+    std::vector<S> symbols;
+    symbols.emplace_back(S::type<float>(), ttl::flat_shape(28, 28, 10));
+    symbols.emplace_back(S::type<int>(), ttl::flat_shape(10));
+    tensor_buffer tb(symbols);
+    ASSERT_EQ(static_cast<int>(tb.size()), 2);
+
+    tb[0].typed<float, 3>();
+    tb[1].typed<int, 1>();
 }

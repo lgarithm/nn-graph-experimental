@@ -3,6 +3,7 @@
 
 #include <ttl/device>
 #include <ttl/experimental/flat_tensor>
+#include <ttl/flat_shape>
 #include <ttl/tensor>
 
 namespace ttl::internal
@@ -13,8 +14,6 @@ using ttl::experimental::flat_tensor_view;
 template <typename R, typename D>
 class basic_tensor_buffer
 {
-    using flat_shape = basic_flat_shape<>;
-
     using shape_list = std::vector<flat_shape>;
     using index_t = std::vector<size_t>;
 
@@ -40,7 +39,7 @@ class basic_tensor_buffer
     }
 
     ttl::vector<R> buffer;
-    const std::vector<size_t> offsets;
+    const index_t offsets;
     const shape_list shapes;
 
   public:
