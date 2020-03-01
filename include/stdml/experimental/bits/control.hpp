@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #pragma once
 #include <ttl/cuda_tensor>
 #include <ttl/nn/bits/graph/tensor.hpp>
@@ -7,7 +6,7 @@
 #include <ttl/range>
 #include <ttl/tensor>
 
-namespace stdml
+namespace stdml::internal
 {
 template <typename R, ttl::rank_t r, typename D>
 void learn(const ttl::tensor_ref<R, r, D> &x,
@@ -27,12 +26,19 @@ void learn(const ttl::cuda_tensor_ref<R, r> &x,
 }
 #endif
 
-template <typename R, typename D>
+template <typename R /* explicit */, typename D, typename R1 /* auto */>
 void learn(const ttl::nn::graph::internal::raw_tensor_ref<D> &x,
-           const ttl::nn::graph::internal::raw_tensor_view<D> &g, const R lr)
+           const ttl::nn::graph::internal::raw_tensor_view<D> &g, const R1 lr)
 {
-    learn(ttl::flatten(x.template typed<R>()),
-          ttl::flatten(g.template typed<R>()), lr);
+    learn<R>(ttl::flatten(x.template typed<R>()),
+             ttl::flatten(g.template typed<R>()), lr);
+}
+
+template <typename R /* explicit */, typename Pairs, typename RT,
+          typename R1 /* auto */>
+void learn_all(const Pairs &gvs, const RT &rt, const R1 lr)
+{
+    for (const auto &[g, v] : gvs) { learn<R>(rt.ref(v), rt.view(g), lr); }
 }
 
 template <typename F, typename... Args>
@@ -44,4 +50,4 @@ int batch_invoke(const int batch_size, const F &f, const Args &... args)
     }
     return n % batch_size;
 }
-}  // namespace stdml
+}  // namespace stdml::internal

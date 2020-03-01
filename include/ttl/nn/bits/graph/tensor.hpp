@@ -3,6 +3,8 @@
 
 namespace ttl::nn::graph::internal
 {
+using flat_shape = ttl::internal::basic_flat_shape<>;
+
 // FIXME: use std encoding
 using idx_encoder =
     std::experimental::basic_type_encoder<ttl::internal::idx_format::encoding>;

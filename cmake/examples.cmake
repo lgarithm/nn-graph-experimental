@@ -31,6 +31,7 @@ SIMPLE_EXAMPLE(quadratic-function)
 SIMPLE_EXAMPLE(simple-derivative)
 SIMPLE_EXAMPLE(train-mnist-cnn)
 SIMPLE_EXAMPLE(train-mnist-slp)
+SIMPLE_EXAMPLE(train-model)
 
 OPTION(BUILD_GPU_EXAMPLES "Build gpu examples." OFF)
 

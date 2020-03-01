@@ -93,4 +93,18 @@ void apply_if(const F &f, const std::tuple<Args...> &args)
 {
     maybe_apply<D, std::is_invocable<F, Args...>::value>()(f, args);
 }
+
+template <typename D, typename F, typename... Args>
+void invoke(const D &, const F &f, const Args &... args)
+{
+    f(args...);
+}
+
+#ifndef NN_GRAPH_ENABLE_CUDA
+template <typename F, typename... Args>
+void invoke(const nvidia_gpu &, const F &f, const Args &... args)
+{
+    std::fprintf(stderr, "CUDA not enabled\n");
+}
+#endif
 }  // namespace ttl::nn::graph::internal

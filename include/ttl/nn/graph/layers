@@ -2,3 +2,4 @@
 #pragma once
 #include <ttl/nn/graph/bits/layers/conv2d.hpp>
 #include <ttl/nn/graph/bits/layers/dense.hpp>
+#include <ttl/nn/graph/bits/layers/output.hpp>

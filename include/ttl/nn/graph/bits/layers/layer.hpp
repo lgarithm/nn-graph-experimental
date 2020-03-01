@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #pragma once
 #include <ttl/nn/bits/graph/node.hpp>
 

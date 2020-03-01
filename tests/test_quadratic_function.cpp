@@ -1,6 +1,6 @@
 #include "testing.hpp"
 
-#include <stdml/control>
+#include <stdml/experimental/control>
 #include <ttl/nn/computation_graph>
 
 template <typename T1, typename T2>
@@ -31,12 +31,8 @@ TEST(quad_test, test1)
     for (int i = 0; i < 10; ++i) {
         e *= 0.8;
         b.run(rt, gs);
-
-        for (auto &[g, v] : gvs) {
-            stdml::learn<float>(rt.get_raw_ref(v), rt.get_raw_view(g), 0.1);
-        }
-
-        auto v = x->get_view(rt);
+        stdml::internal::learn_all<float>(gvs, rt, 0.1);
+        auto v = rt.view(x);
         ASSERT_FLOAT_EQ(v.data()[0], e);
     }
 }

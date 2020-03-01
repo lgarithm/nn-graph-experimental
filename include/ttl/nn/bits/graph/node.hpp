@@ -70,7 +70,7 @@ class op_node : public node
     std::vector<const node *> dependencies() const { return dependencies_; }
 };
 
-template <typename R, ttl::rank_t r>
+template <typename R, rank_t r>
 class var_node;
 
 class base_var_node : public node
@@ -83,25 +83,19 @@ class base_var_node : public node
 
     virtual base_var_node *dup(const std::string &name) const = 0;
 
+    virtual tensor_symbol symbol() const = 0;
+
     virtual std::string str() const = 0;
 
-    virtual void create(cpu_runtime &rt) const = 0;
-
-    virtual void define(cpu_runtime &rt) const = 0;
-
-    virtual void create(gpu_runtime &rt) const = 0;
-
-    virtual void define(gpu_runtime &rt) const = 0;
-
-    template <typename R, ttl::rank_t r>
-    var_node<R, r> *as() const
+    template <typename R, rank_t r>
+    var_node<R, r> *typed() const
     {
         using V = var_node<R, r>;
         return const_cast<V *>(down_cast<V>(this));
     }
 };
 
-template <typename R, ttl::rank_t r>
+template <typename R, rank_t r>
 class var_node : public base_var_node
 {
     const ttl::shape<r> shape_;
@@ -109,7 +103,7 @@ class var_node : public base_var_node
 
   public:
     using value_type = R;
-    static constexpr ttl::rank_t rank = r;
+    static constexpr rank_t rank = r;
 
     var_node(const var_node &) = delete;
 
@@ -119,6 +113,11 @@ class var_node : public base_var_node
     }
 
     const std::string &name() const override { return name_; }
+
+    tensor_symbol symbol() const override
+    {
+        return tensor_symbol(tensor_symbol::type<R>(), flat_shape(shape_));
+    }
 
     std::string str() const override
     {
@@ -135,35 +134,7 @@ class var_node : public base_var_node
         return new var_node(shape_, name);
     }
 
-    void create(cpu_runtime &rt) const override { rt.create<R>(shape_, this); }
-
-    void define(cpu_runtime &rt) const override { rt.define<R>(shape_, this); }
-
-    void create(gpu_runtime &rt) const override { rt.create<R>(shape_, this); }
-
-    void define(gpu_runtime &rt) const override { rt.define<R>(shape_, this); }
-
     ttl::shape<r> shape() const { return shape_; }
-
-    ttl::tensor_ref<R, r> get_ref(cpu_runtime &rt) const
-    {
-        return rt.get_ref<R, r>(this);
-    }
-
-    ttl::tensor_view<R, r> get_view(cpu_runtime &rt) const
-    {
-        return rt.get_view<R, r>(this);
-    }
-
-    ttl::cuda_tensor_ref<R, r> get_ref(gpu_runtime &rt) const
-    {
-        return rt.get_ref<R, r>(this);
-    }
-
-    ttl::cuda_tensor_view<R, r> get_view(gpu_runtime &rt) const
-    {
-        return rt.get_view<R, r>(this);
-    }
 };
 
 class base_func_node : public node

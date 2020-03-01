@@ -1,0 +1,9 @@
+// -*- mode: c++ -*-
+#pragma once
+#include <stdml/experimental/bits/model.hpp>
+
+namespace stdml
+{
+template <typename ttl::rank_t r, typename N, typename D = ttl::host_memory>
+using classification_model = internal::basic_classification_model<r, N, D>;
+}
