@@ -75,7 +75,7 @@ class basic_classification_model  // : public basic_supervised_model
     {
         std::tie(xs, y_s, predictions, loss) =
             create_model(b, input, n_categories, batch_size);
-        gvs = b.gradients(loss->as<float, 1>());
+        gvs = b.gradients(loss->typed<float, 1>());
         for (const auto &[g, v] : gvs) {
             printf("%s is the gradient of %s\n", g->name().c_str(),
                    v->name().c_str());

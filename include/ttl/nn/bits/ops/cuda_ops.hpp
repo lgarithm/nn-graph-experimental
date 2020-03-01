@@ -89,12 +89,12 @@ struct cuda_op<ttl::nn::ops::uniform_constant> {
     using type = ttl::nn::ops::uniform_constant;
 };
 
-template <ttl::rank_t... rs>
+template <rank_t... rs>
 struct cuda_op<ttl::nn::ops::copy_flatten<rs...>> {
     using type = ttl::nn::cuda::ops::copy_flatten<rs...>;
 };
 
-template <ttl::rank_t... rs>
+template <rank_t... rs>
 struct cuda_op<ttl::nn::ops::grad::copy_flatten<rs...>> {
     using type = ttl::nn::cuda::ops::grad::copy_flatten<rs...>;
 };

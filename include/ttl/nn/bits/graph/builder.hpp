@@ -10,7 +10,6 @@
 #include <ttl/nn/bits/graph/execution.hpp>
 #include <ttl/nn/bits/graph/node.hpp>
 #include <ttl/nn/bits/graph/runtime.hpp>
-#include <ttl/nn/bits/graph/symbol_manager.hpp>
 #include <ttl/nn/bits/ops/elementary.hpp>
 #include <ttl/nn/bits/ops/init.hpp>
 #include <ttl/tensor>
@@ -58,7 +57,7 @@ class base_builder
 
     std::vector<const op_node *> init_ops_;
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *tmp_var(const std::string &name, const ttl::shape<r> &shape)
     {
         auto *n = new var_node<R, r>(shape, name);
@@ -77,7 +76,7 @@ class base_builder
         return ttl::make_shape(d...);
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *var(const std::string &name, const ttl::shape<r> &shape)
     {
         auto *n = new var_node<R, r>(shape, name);
@@ -86,7 +85,7 @@ class base_builder
         return n;
     }
 
-    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
+    template <typename R, rank_t r, typename Init = nn::ops::noop>
     var_node<R, r> *covar(const std::string &name, const ttl::shape<r> &shape,
                           const Init &init = Init())
     {
@@ -97,22 +96,21 @@ class base_builder
             using it = typename nn::for_device<Init, nvidia_gpu>::type;
             const it init_g = create_op<it>(init);
             auto i = new op_node(
-                name, [=](basic_runtime<cpu> &rt) { init(n->get_ref(rt)); },
-                [=](basic_runtime<nvidia_gpu> &rt) { init_g(n->get_ref(rt)); },
-                {});
+                name, [=](basic_runtime<cpu> &rt) { init(rt.ref(n)); },
+                [=](basic_runtime<nvidia_gpu> &rt) { init_g(rt.ref(n)); }, {});
             own(i);
             init_ops_.push_back(i);
         }
         return n;
     }
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     var_node<R, r> *var(const ttl::shape<r> &shape)
     {
         return var<R>("", shape);
     }
 
-    template <typename R, ttl::rank_t r, typename Init = nn::ops::noop>
+    template <typename R, rank_t r, typename Init = nn::ops::noop>
     var_node<R, r> *covar(const ttl::shape<r> &shape, const Init &init = Init())
     {
         return covar<R>("", shape, init);
@@ -127,7 +125,7 @@ class base_builder
     auto invoke(const std::string &name, const Op &op, const Nodes *... xs)
     {
         const auto shape = op(xs->shape()...);
-        constexpr ttl::rank_t r = decltype(shape)::rank;
+        constexpr rank_t r = decltype(shape)::rank;
         using Node = var_node<R, r>;
         Node *y = tmp_var<R>(name, shape);
         const auto fn = demangled_type_info_name(typeid(op));
@@ -187,7 +185,7 @@ class base_builder
 
     using grad_var_t = std::pair<const base_var_node *, const base_var_node *>;
 
-    template <typename R, ttl::rank_t r>
+    template <typename R, rank_t r>
     auto gradients(const var_node<R, r> *y)
     {
         const std::set<const base_var_node *> xs(covars_.begin(),
@@ -226,20 +224,25 @@ class builder : public base_builder
   public:
     void build(RT &rt) const
     {
-        for (const auto v : covars_) { v->create(rt); }
-        for (const auto v : tmp_vars_) { v->create(rt); }
-        for (const auto v : vars_) { v->define(rt); }
+        using model_buffer_t = typename RT::model_buffer_t;
+        using symbol_t = typename model_buffer_t::symbol_type;
+        std::map<const base_var_node *, int> index;
+        std::vector<symbol_t> symbols;
+        symbols.reserve(covars_.size());
+        for (auto i : range(covars_.size())) {
+            const auto &v = covars_[i];
+            symbols.push_back(v->symbol());
+            index[v] = i;
+        }
+        rt.set_model(new model_buffer_t(index, symbols));
+        for (const auto v : tmp_vars_) { rt.create(v->symbol(), v); }
+        for (const auto v : vars_) { rt.define(v->symbol(), v); }
     }
 
     void init(RT &rt) const
     {
         for (const auto init : init_ops_) { init->run(rt); }
     }
-
-    // void run(RT &rt, const node *y) const
-    // {
-    //     std::cerr << "[W] TODO:" << std::endl;
-    // }
 
     void _run(RT &rt, execution &e, const base_func_node *f) const
     {

@@ -32,7 +32,7 @@ TEST(quad_test, test1)
         e *= 0.8;
         b.run(rt, gs);
         stdml::internal::learn_all<float>(gvs, rt, 0.1);
-        auto v = x->get_view(rt);
+        auto v = rt.view(x);
         ASSERT_FLOAT_EQ(v.data()[0], e);
     }
 }

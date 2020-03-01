@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <ttl/bits/std_tensor_symbol.hpp>
 #include <ttl/debug>
 #include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/tensor.hpp>
@@ -12,120 +13,77 @@
 
 namespace ttl::nn::graph::internal
 {
-template <typename R, rank_t r, typename D>
-class tensor_variable;
-
-template <typename R, rank_t r, typename D>
-class tensor_reference;
+using tensor_symbol = ttl::internal::basic_raw_tensor_symbol<idx_encoder>;
 
 template <typename D>
 class variable
 {
-  public:
-    virtual ~variable() {}
-
-    virtual raw_tensor_ref<D> raw_ref() const = 0;
-    virtual raw_tensor_view<D> raw_view() const = 0;
-
-    template <typename R, rank_t r>
-    tensor_variable<R, r, D> &as()
-    {
-        return *down_cast<tensor_variable<R, r, D>>(this);
-    }
-
-    virtual size_t data_size() const = 0;
-
-    virtual operator std::string() const = 0;
-};
-
-template <typename R, rank_t r, typename D>
-class tensor_variable : public variable<D>
-{
-    using T = ttl::tensor<R, r, D>;
-    using Ref = ttl::tensor_ref<R, r, D>;
-
-    T value_;
+    using E = typename raw_tensor<D>::encoder_type;
+    using value_type_t = typename E::value_type;
+    const raw_tensor<D> value_;
 
   public:
-    tensor_variable(const ttl::shape<r> &shape) : value_(shape) {}
-
-    Ref get() const { return Ref(value_); }
-
-    raw_tensor_ref<D> raw_ref() const override
+    variable(const value_type_t &type, const flat_shape &shape)
+        : value_(type, shape)
     {
-        return raw_tensor_ref<D>(value_.data(), idx_encoder::value<R>(),
-                                 value_.shape());
     }
 
-    raw_tensor_view<D> raw_view() const override
+    variable(const tensor_symbol &sym) : variable(sym.value_type(), sym.shape())
     {
-        return raw_tensor_view<D>(value_.data(), idx_encoder::value<R>(),
-                                  value_.shape());
     }
 
-    size_t data_size() const override { return value_.data_size(); }
+    raw_tensor_ref<D> ref() const { return raw_tensor_ref<D>(value_); }
 
-    operator std::string() const override
-    {
-        return ttl::tensor_type_name(value_);
-    }
+    raw_tensor_view<D> view() const { return raw_tensor_view<D>(value_); }
+
+    size_t data_size() const { return value_.data_size(); }
+
+    operator std::string() const { return "T" + to_string(value_.shape()); }
 };
 
 template <typename D>
 class reference
 {
+    using E = typename raw_tensor<D>::encoder_type;
+    using value_type_t = typename E::value_type;
+
+    const value_type_t value_type_;
+    const flat_shape shape_;
+    std::optional<raw_tensor_ref<D>> value_;
+
   public:
-    virtual ~reference() {}
-
-    virtual void unbind() = 0;
-
-    virtual raw_tensor_ref<D> raw_ref() const = 0;
-    virtual raw_tensor_view<D> raw_view() const = 0;
-
-    template <typename R, rank_t r>
-    tensor_reference<R, r, D> &as()
+    reference(const value_type_t &type, const flat_shape &shape)
+        : value_type_(type), shape_(shape)
     {
-        return *down_cast<tensor_reference<R, r, D>>(this);
     }
-};
 
-template <typename R, rank_t r, typename D>
-class tensor_reference : public reference<D>
-{
-    using Ref = ttl::tensor_ref<R, r, D>;
-
-    const ttl::shape<r> shape_;
-
-    std::optional<Ref> value_;
-
-  public:
-    tensor_reference(const ttl::shape<r> &shape) : shape_(shape) {}
-
-    void bind(const Ref &t)
+    reference(const tensor_symbol &sym)
+        : reference(sym.value_type(), sym.shape())
     {
-        if (t.shape() != shape_) {
+    }
+
+    void bind(const raw_tensor_view<D> &t)
+    {
+        if (t.shape().size() != shape_.size()) {
             throw std::invalid_argument(to_string(t.shape()) +
                                         " != " + to_string(shape_));
         }
-        value_.emplace(t);
+        if (t.value_type() != value_type_) {
+            // throw std::invalid_argument("type mismatch");
+            throw std::invalid_argument(std::to_string(t.value_type()) +
+                                        " != " + std::to_string(value_type_));
+        }
+        raw_tensor_ref<D> r((void *)t.data(), t.value_type(), t.shape());
+        value_.emplace(r);
     }
 
-    void unbind() override { value_.reset(); }
+    void unbind() { value_.reset(); }
 
-    Ref get() const { return value_.value(); }
+    raw_tensor_ref<D> ref() const { return value_.value(); }
 
-    raw_tensor_ref<D> raw_ref() const override
+    raw_tensor_view<D> view() const
     {
-        const auto &value = value_.value();
-        return raw_tensor_ref<D>(value.data(), idx_encoder::value<R>(),
-                                 value.shape());
-    }
-
-    raw_tensor_view<D> raw_view() const override
-    {
-        const auto &value = value_.value();
-        return raw_tensor_view<D>(value.data(), idx_encoder::value<R>(),
-                                  value.shape());
+        return raw_tensor_view<D>(value_.value());
     }
 };
 
@@ -136,21 +94,18 @@ class variable_manager
     std::vector<std::unique_ptr<reference<D>>> references_;
 
   public:
-    template <typename R, rank_t r>
-    tensor_variable<R, r, D> *create_tensor(const ttl::shape<r> &shape)
+    variable<D> *create_tensor(const tensor_symbol &sym)
     {
-        auto v = new tensor_variable<R, r, D>(shape);
+        variable<D> *v = new variable<D>(sym);
         variables_.emplace_back(v);
         return v;
     }
 
-    template <typename R, rank_t r>
-    tensor_reference<R, r, D> *
-    create_tensor_reference(const ttl::shape<r> &shape)
+    reference<D> *create_tensor_reference(const tensor_symbol &sym)
     {
-        auto tr = new tensor_reference<R, r, D>(shape);
-        references_.emplace_back(tr);
-        return tr;
+        reference<D> *r = new reference<D>(sym);
+        references_.emplace_back(r);
+        return r;
     }
 };
 }  // namespace ttl::nn::graph::internal

@@ -28,11 +28,11 @@ void example1()
         b.run(rt, gs);
         stdml::internal::learn_all<float>(gvs, rt, 0.1);
         {
-            auto v = y->get_view(rt);
+            auto v = rt.view(y);
             std::cerr << "y = " << v.data()[0] << std::endl;
         }
         {
-            auto v = x->get_view(rt);
+            auto v = rt.view(x);
             std::cerr << "x = " << v.data()[0] << std::endl;
         }
     }
