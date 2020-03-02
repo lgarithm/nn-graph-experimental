@@ -7,7 +7,7 @@ using flat_shape = ttl::internal::basic_flat_shape<>;
 
 // FIXME: use std encoding
 using idx_encoder =
-    std::experimental::basic_type_encoder<ttl::internal::idx_format::encoding>;
+    ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
 
 template <typename D>
 using raw_tensor = ttl::internal::basic_raw_tensor<

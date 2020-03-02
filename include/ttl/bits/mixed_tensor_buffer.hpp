@@ -12,7 +12,7 @@ namespace ttl::internal
 template <typename E, typename D>
 class basic_mixed_tensor_buffer
 {
-    using symbol_t = basic_raw_tensor_symbol<E>;
+    using symbol_t = ttl::experimental::raw_type<E>;
     using symbol_list = std::vector<symbol_t>;
     using index_t = std::vector<size_t>;
 

@@ -15,7 +15,6 @@
 
 namespace ttl::nn::graph::internal
 {
-
 class node
 {
   public:

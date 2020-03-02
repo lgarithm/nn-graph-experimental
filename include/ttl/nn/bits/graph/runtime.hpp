@@ -59,8 +59,8 @@ class runtime
 template <typename D>
 class basic_runtime : public runtime
 {
-    using idx_encoder = std::experimental::basic_type_encoder<
-        ttl::internal::idx_format::encoding>;
+    using idx_encoder =
+        ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
 
   public:
     using model_buffer_t = basic_model_buffer<key_t, idx_encoder, D>;

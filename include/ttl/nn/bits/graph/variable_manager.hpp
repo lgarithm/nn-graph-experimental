@@ -13,8 +13,6 @@
 
 namespace ttl::nn::graph::internal
 {
-using tensor_symbol = ttl::internal::basic_raw_tensor_symbol<idx_encoder>;
-
 template <typename D>
 class variable
 {

@@ -29,7 +29,7 @@ template <typename E, typename D = ttl::host_memory>
 using mixed_tensor_buffer = internal::basic_mixed_tensor_buffer<E, D>;
 
 using idx_encoder =
-    std::experimental::basic_type_encoder<ttl::internal::idx_format::encoding>;
+    ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
 }  // namespace ttl
 
 TEST(tensor_buffer_test, test2)
