@@ -42,10 +42,7 @@ class basic_raw_tensor_symbol
     }
 
     template <rank_t r>
-    basic_shape<r
-                //, typename S::dimention_type
-                >
-    shape() const
+    basic_shape<r, typename S::dimension_type> shape() const
     {
         return shape_.template ranked<r>();
     }

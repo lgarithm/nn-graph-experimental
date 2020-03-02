@@ -1,4 +1,5 @@
 #pragma once
+#include <ttl/tensor>
 
 namespace ttl::nn::graph::internal
 {
@@ -15,8 +16,7 @@ class binding
 
   public:
     template <typename R, rank_t r>
-    binding(RT &rt, key_t key, const ttl::tensor_view<R, r, D> &x)
-        : rt(rt), key(key)
+    binding(RT &rt, key_t key, const tensor_view<R, r, D> &x) : rt(rt), key(key)
     {
         rt.bind(key, x);
     }

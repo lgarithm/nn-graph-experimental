@@ -1,8 +1,5 @@
+// -*- mode: c++ -*-
 #pragma once
-// FIXME: move to upstream
-#include <ttl/nn/bits/kernels/cpu/elementary.hpp>
-#include <ttl/nn/bits/kernels/cpu/init.hpp>
-
 #include <ttl/nn/bits/graph/binding.hpp>
 #include <ttl/nn/bits/graph/builder.hpp>
 #include <ttl/nn/bits/graph/device.hpp>
