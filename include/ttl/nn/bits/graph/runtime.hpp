@@ -62,6 +62,8 @@ class basic_runtime : public runtime
     using idx_encoder =
         ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
 
+    using tensor_type = experimental::raw_type<idx_encoder>;
+
   public:
     using model_buffer_t = basic_model_buffer<key_t, idx_encoder, D>;
 
@@ -90,22 +92,22 @@ class basic_runtime : public runtime
 
     void set_model(model_buffer_t *mb) { mb_.reset(mb); }
 
-    auto create(const tensor_symbol &sym, key_t key)
+    auto create(const tensor_type &type, key_t key)
     {
         if (vars_.count(key) > 0) {
             throw std::logic_error("duplicated creation");
         }
-        auto t = vm_.create_tensor(sym);
+        auto t = vm_.create_tensor(type);
         vars_[key] = t;
         return t;
     }
 
-    auto define(const tensor_symbol &sym, key_t key)
+    auto define(const tensor_type &type, key_t key)
     {
         if (binds_.count(key) > 0) {
             throw std::logic_error("duplicated definition");
         }
-        auto t = vm_.create_tensor_reference(sym);
+        auto t = vm_.create_tensor_reference(type);
         binds_[key] = t;
         return t;
     }

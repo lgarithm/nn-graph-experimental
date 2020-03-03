@@ -74,6 +74,10 @@ class var_node;
 
 class base_var_node : public node
 {
+    using idx_encoder =
+        ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
+    using TT = experimental::raw_type<idx_encoder>;
+
   protected:
     using var_node_list_t = std::vector<const base_var_node *>;
 
@@ -82,7 +86,7 @@ class base_var_node : public node
 
     virtual base_var_node *dup(const std::string &name) const = 0;
 
-    virtual tensor_symbol symbol() const = 0;
+    virtual TT type() const = 0;
 
     virtual std::string str() const = 0;
 
@@ -97,6 +101,10 @@ class base_var_node : public node
 template <typename R, rank_t r>
 class var_node : public base_var_node
 {
+    using idx_encoder =
+        ttl::internal::basic_type_encoder<ttl::internal::idx_format::encoding>;
+    using TT = experimental::raw_type<idx_encoder>;
+
     const ttl::shape<r> shape_;
     const std::string name_;
 
@@ -113,10 +121,7 @@ class var_node : public base_var_node
 
     const std::string &name() const override { return name_; }
 
-    tensor_symbol symbol() const override
-    {
-        return tensor_symbol(tensor_symbol::type<R>(), flat_shape(shape_));
-    }
+    TT type() const override { return TT(TT::type<R>(), flat_shape(shape_)); }
 
     std::string str() const override
     {

@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 
-#include <ttl/bits/std_tensor_symbol.hpp>
 #include <ttl/device>
 #include <ttl/experimental/raw_tensor>
+#include <ttl/experimental/type>
 #include <ttl/flat_shape>
 #include <ttl/tensor>
 

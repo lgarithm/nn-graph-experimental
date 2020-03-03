@@ -225,18 +225,18 @@ class builder : public base_builder
     void build(RT &rt) const
     {
         using model_buffer_t = typename RT::model_buffer_t;
-        using symbol_t = typename model_buffer_t::symbol_type;
+        using TT = typename model_buffer_t::tensor_type;
         std::map<const base_var_node *, int> index;
-        std::vector<symbol_t> symbols;
-        symbols.reserve(covars_.size());
+        std::vector<TT> types;
+        types.reserve(covars_.size());
         for (auto i : range(covars_.size())) {
             const auto &v = covars_[i];
-            symbols.push_back(v->symbol());
+            types.push_back(v->type());
             index[v] = i;
         }
-        rt.set_model(new model_buffer_t(index, symbols));
-        for (const auto v : tmp_vars_) { rt.create(v->symbol(), v); }
-        for (const auto v : vars_) { rt.define(v->symbol(), v); }
+        rt.set_model(new model_buffer_t(index, types));
+        for (const auto v : tmp_vars_) { rt.create(v->type(), v); }
+        for (const auto v : vars_) { rt.define(v->type(), v); }
     }
 
     void init(RT &rt) const

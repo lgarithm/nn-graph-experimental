@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include <ttl/bits/std_tensor_symbol.hpp>
 #include <ttl/debug>
+#include <ttl/experimental/type>
 #include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/tensor.hpp>
 #include <ttl/shape>
@@ -26,7 +26,8 @@ class variable
     {
     }
 
-    variable(const tensor_symbol &sym) : variable(sym.value_type(), sym.shape())
+    variable(const experimental::raw_type<E> &sym)
+        : variable(sym.value_type(), sym.shape())
     {
     }
 
@@ -55,7 +56,7 @@ class reference
     {
     }
 
-    reference(const tensor_symbol &sym)
+    reference(const experimental::raw_type<E> &sym)
         : reference(sym.value_type(), sym.shape())
     {
     }
@@ -88,18 +89,19 @@ class reference
 template <typename D>
 class variable_manager
 {
+    using E = typename raw_tensor<D>::encoder_type;
     std::vector<std::unique_ptr<variable<D>>> variables_;
     std::vector<std::unique_ptr<reference<D>>> references_;
 
   public:
-    variable<D> *create_tensor(const tensor_symbol &sym)
+    variable<D> *create_tensor(const experimental::raw_type<E> &sym)
     {
         variable<D> *v = new variable<D>(sym);
         variables_.emplace_back(v);
         return v;
     }
 
-    reference<D> *create_tensor_reference(const tensor_symbol &sym)
+    reference<D> *create_tensor_reference(const experimental::raw_type<E> &sym)
     {
         reference<D> *r = new reference<D>(sym);
         references_.emplace_back(r);
