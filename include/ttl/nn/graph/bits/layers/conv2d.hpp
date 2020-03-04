@@ -5,7 +5,8 @@
 
 namespace ttl::nn::graph::layers
 {
-template <typename image_order = traits::nhwc>
+template <typename image_order = traits::nhwc,
+          typename filter_order = traits::rscd>
 class conv_layer
 {
     using conv_op = ops::conv<image_order>;
@@ -27,7 +28,8 @@ class conv_layer
                const Binit &b_init = Binit()) const
     {
         const auto [r, s] = ksize.dims();
-        const auto [n, h, w, c] = x->shape().dims();
+        // FIXME: use filter_order
+        const auto c = std::get<3>(x->shape().dims());  // [n,h,w,c]
         auto kernel =
             b.template covar<R>("kernel", b.shape(r, s, c, n_filters), w_init);
         auto bias = b.template covar<R>("bias", b.shape(n_filters), b_init);

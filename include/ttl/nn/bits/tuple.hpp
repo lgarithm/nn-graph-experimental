@@ -3,13 +3,17 @@
 #include <tuple>
 #include <vector>
 
+template <size_t r, typename T, size_t... I>
+std::array<T, r> index_array(const std::vector<T> &v, std::index_sequence<I...>)
+{
+    return std::array<T, r>({v[I]...});
+}
+
 template <size_t n, typename T>
 std::array<T, n> vec2arr(const std::vector<T> &v)
 {
     if (v.size() != n) { throw std::logic_error("invalid arity"); }
-    std::array<T, n> a;
-    std::copy(v.begin(), v.end(), a.begin());
-    return a;
+    return index_array<n>(v, std::make_index_sequence<n>());
 }
 
 template <typename T, typename Tuple, size_t... I>
@@ -33,7 +37,8 @@ auto tuple_map(const F &f, const T &t, std::index_sequence<I...>)
     return std::make_tuple(f(std::get<I>(t))...);
 }
 
-template <typename F, typename T> auto tuple_map(const F &f, const T &t)
+template <typename F, typename T>
+auto tuple_map(const F &f, const T &t)
 {
     return tuple_map(f, t,
                      std::make_index_sequence<std::tuple_size<T>::value>());
