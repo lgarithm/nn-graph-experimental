@@ -35,7 +35,7 @@ class basic_mixed_tensor_buffer
         return offsets;
     }
 
-    ttl::vector<char> buffer;
+    ttl::vector<char, D> buffer;
     const index_t offsets;
     const symbol_list symbols;
 

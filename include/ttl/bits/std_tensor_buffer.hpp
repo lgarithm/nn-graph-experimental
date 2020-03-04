@@ -38,7 +38,7 @@ class basic_tensor_buffer
         return offsets;
     }
 
-    ttl::vector<R> buffer;
+    ttl::vector<R, D> buffer;
     const index_t offsets;
     const shape_list shapes;
 
