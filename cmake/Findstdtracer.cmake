@@ -11,7 +11,7 @@ SET(STDTRACER_GIT_TAG
 SET(PREFIX ${CMAKE_SOURCE_DIR}/3rdparty)
 
 EXTERNALPROJECT_ADD(
-    libstdtracer
+    stdtracer-repo
     LOG_DOWNLOAD ON
     LOG_INSTALL ON
     LOG_CONFIGURE ON
@@ -24,8 +24,8 @@ EXTERNALPROJECT_ADD(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PREFIX} -DBUILD_TESTS=0
                -DBUILD_EXAMPLES=0)
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rdparty/src/libstdtracer/include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rdparty/src/stdtracer-repo/include)
 
 FUNCTION(TARGET_USE_STDTRACER target)
-    ADD_DEPENDENCIES(${target} libstdtracer)
+    ADD_DEPENDENCIES(${target} stdtracer-repo)
 ENDFUNCTION()

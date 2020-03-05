@@ -70,6 +70,11 @@ struct cuda_op {
 namespace ttl::nn
 {
 template <>
+struct cuda_op<ttl::nn::ops::onehot> {
+    using type = ttl::nn::ops::onehot;
+};
+
+template <>
 struct cuda_op<ttl::nn::ops::zeros> {
     using type = ttl::nn::ops::zeros;
 };

@@ -6,17 +6,17 @@ if [ -f /usr/include/cuda_runtime.h ]; then
     HAVE_CUDA=1
 fi
 
-BUILD_TESTS=0
-BUILD_GTEST=0
+BLAS_HOME=
 BUILD_EXAMPLES=0
 BUILD_GPU_EXAMPLES=0
-USE_BLAS=0
-BLAS_HOME=
-USE_CMAKE=1
-USE_CLANG_TIDY=0
+BUILD_GTEST=0
+BUILD_TESTS=0
+CUDA_HOME=/usr/local/cuda
+ENABLE_BLAS=0
 ENABLE_CUDA=${HAVE_CUDA}
 ENABLE_TRACE=0
-CUDA_HOME=/usr/local/cuda
+USE_CLANG_TIDY=0
+USE_CMAKE=1
 VERBOSE=0
 
 parse_args() {
@@ -28,8 +28,8 @@ parse_args() {
         --with-blas=*)
             BLAS_HOME="${i#*=}"
             ;;
-        --use-blas)
-            USE_BLAS=1
+        --enable-blas)
+            ENABLE_BLAS=1
             ;;
         --tests)
             BUILD_TESTS=1
@@ -112,7 +112,7 @@ add_cmake_flags() {
 
     add_cmake_flag USE_CLANG_TIDY ${USE_CLANG_TIDY}
 
-    add_cmake_flag USE_OPENBLAS ${USE_BLAS}
+    add_cmake_flag USE_OPENBLAS ${ENABLE_BLAS}
     if [ ! -z "${BLAS_HOME}" ]; then
         add_cmake_flag BLAS_HOME ${BLAS_HOME}
     fi
@@ -142,7 +142,7 @@ main() {
     log_config_var BUILD_GTEST
     log_config_var BUILD_EXAMPLES
     log_config_var BUILD_GPU_EXAMPLES
-    log_config_var USE_BLAS
+    log_config_var ENABLE_BLAS
     log_config_var ENABLE_CUDA
 
     if [ ${USE_CMAKE} -eq 0 ]; then
