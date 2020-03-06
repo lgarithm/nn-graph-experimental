@@ -17,17 +17,17 @@ template <typename D>
 class variable
 {
     using E = typename raw_tensor<D>::encoder_type;
+    using raw_type = experimental::raw_type<E>;
     using value_type_t = typename E::value_type;
     const raw_tensor<D> value_;
 
   public:
-    variable(const value_type_t &type, const flat_shape &shape)
-        : value_(type, shape)
+    variable(const value_type_t &value_type, const flat_shape &shape)
+        : value_(value_type, shape)
     {
     }
 
-    variable(const experimental::raw_type<E> &sym)
-        : variable(sym.value_type(), sym.shape())
+    variable(const raw_type &type) : variable(type.value_type(), type.shape())
     {
     }
 
@@ -37,7 +37,10 @@ class variable
 
     size_t data_size() const { return value_.data_size(); }
 
-    operator std::string() const { return "T" + to_string(value_.shape()); }
+    operator std::string() const
+    {
+        return raw_type(value_.value_type(), value_.shape()).name();
+    }
 };
 
 template <typename D>
