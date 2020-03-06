@@ -1,4 +1,4 @@
-
+#include <stdml/experimental/evaluate>
 #include <stdml/experimental/models>
 #include <ttl/algorithm>
 #include <ttl/nn/computation_graph>
@@ -54,7 +54,8 @@ void slp_model()
 
     const int batch_size = 100;
     const int epochs = 1;
-    stdml::classification_model<1, uint8_t> model(ttl::make_shape(28 * 28), 10);
+    stdml::experimental::classification_model<float, 1, uint8_t> model(
+        ttl::make_shape(28 * 28), 10);
 
     model.init(
         [](auto &b, const ttl::shape<1> &in, const int k, const int bs) {
@@ -64,8 +65,13 @@ void slp_model()
 
     model.train(ttl::view(prepro2(train.images)), ttl::view(train.labels),
                 batch_size, epochs);
-    model.test(ttl::view(prepro2(train.images)), ttl::view(train.labels),
-               batch_size);
+    {
+        stdml::experimental::classification_result r;
+        model.test(r, ttl::view(prepro2(train.images)), ttl::view(train.labels),
+                   batch_size);
+        printf("succ: %d, failed: %d, accuracy: %.2f%%\n", r.positives(),
+               r.negatives(), r.positive_percent());
+    }
 }
 
 int main(int argc, char *argv[])

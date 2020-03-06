@@ -1,5 +1,5 @@
+#include <stdml/ds/mnist>
 #include <ttl/nn/computation_graph>
-#include <ttl/nn/experimental/datasets>
 #include <ttl/nn/graph/layers>
 #include <ttl/nn/ops>
 #include <ttl/tensor>
@@ -66,23 +66,16 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::builder b;
     const auto [xs, y_s, predictions, loss] =
         create_cnn_model<float>(b, b.shape(28, 28, 1), batch_size, 10);
-
     auto gvs = b.gradients(loss);
-
     ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
-
-    using nn::experimental::datasets::load_mnist_data;
-    const std::string home(std::getenv("HOME"));
-    const std::string prefix = home + "/var/data/mnist";
-    const auto train = load_mnist_data(prefix, "train");
-    const auto test = load_mnist_data(prefix, "t10k");
-
-    train_mnist(epoches, batch_size, b, rt,                                 //
-                ttl::view(prepro4(train.images)), ttl::view(train.labels),  //
-                ttl::view(prepro4(test.images)), ttl::view(test.labels),    //
-                xs, y_s, gvs, predictions, do_test);
+    const auto ds = stdml::datasets::mnist::load_all();
+    train_mnist(
+        epoches, batch_size, b, rt,                                       //
+        ttl::view(prepro4(ds.train.images)), ttl::view(ds.train.labels),  //
+        ttl::view(prepro4(ds.test.images)), ttl::view(ds.test.labels),    //
+        xs, y_s, gvs, predictions, do_test);
 }
 
 template <typename T>
@@ -99,24 +92,16 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::gpu_builder b;
     const auto [xs, y_s, predictions, loss] =
         create_cnn_model<float>(b, b.shape(28, 28, 1), batch_size, 10);
-
     auto gvs = b.gradients(loss);
-
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
-
-    using nn::experimental::datasets::load_mnist_data;
-    const std::string home(std::getenv("HOME"));
-    const std::string prefix = home + "/var/data/mnist";
-    const auto train = load_mnist_data(prefix, "train");
-    const auto test = load_mnist_data(prefix, "t10k");
-
-    auto images = make_cuda_tensor_from(ttl::view(prepro4(train.images)));
-    auto labels = make_cuda_tensor_from(ttl::view(train.labels));
-    auto test_images = make_cuda_tensor_from(ttl::view(prepro4(test.images)));
-    auto test_labels = make_cuda_tensor_from(ttl::view(test.labels));
-
+    const auto ds = stdml::datasets::mnist::load_all();
+    auto images = make_cuda_tensor_from(ttl::view(prepro4(ds.train.images)));
+    auto labels = make_cuda_tensor_from(ttl::view(ds.train.labels));
+    auto test_images =
+        make_cuda_tensor_from(ttl::view(prepro4(ds.test.images)));
+    auto test_labels = make_cuda_tensor_from(ttl::view(ds.test.labels));
     train_mnist(epoches, batch_size, b, rt,                      //
                 ttl::view(images), ttl::view(labels),            //
                 ttl::view(test_images), ttl::view(test_labels),  //

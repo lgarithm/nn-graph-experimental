@@ -1,5 +1,9 @@
+INCLUDE(cmake/stdc++fs.cmake)
+
 FUNCTION(ADD_EXAMPLE target)
     ADD_EXECUTABLE(${target} ${ARGN})
+    TARGET_INCLUDE_DIRECTORIES(${target}
+                               PRIVATE ${CMAKE_SOURCE_DIR}/examples/include)
     TARGET_USE_STDTRACER(${target})
     TARGET_USE_STDTENSOR(${target})
     TARGET_USE_STDNN_OPS(${target})

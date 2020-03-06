@@ -1,9 +1,11 @@
 // -*- mode: c++ -*-
 #pragma once
-#include <stdml/experimental/bits/model.hpp>
+#include <stdml/experimental/bits/model/std_classification_model.hpp>
+#include <stdml/experimental/bits/model/std_supervised_model.hpp>
 
-namespace stdml
+namespace stdml::experimental
 {
-template <typename ttl::rank_t r, typename N, typename D = ttl::host_memory>
-using classification_model = internal::basic_classification_model<r, N, D>;
+template <typename Rx, typename ttl::rank_t r, typename N,
+          typename D = ttl::host_memory>
+using classification_model = internal::basic_classification_model<Rx, r, N, D>;
 }

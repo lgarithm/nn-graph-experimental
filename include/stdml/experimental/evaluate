@@ -1,0 +1,10 @@
+// -*- mode: c++ -*-
+#pragma once
+#include <stdml/experimental/bits/eval/binary_result.hpp>
+#include <stdml/experimental/bits/eval/classification.hpp>
+
+namespace stdml::experimental
+{
+using binary_results = internal::basic_binary_results<>;
+using classification_result = internal::basic_classification_result<>;
+}  // namespace stdml::experimental
