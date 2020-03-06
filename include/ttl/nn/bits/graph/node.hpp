@@ -88,8 +88,6 @@ class base_var_node : public node
 
     virtual TT type() const = 0;
 
-    virtual std::string str() const = 0;
-
     template <typename R, rank_t r>
     var_node<R, r> *typed() const
     {
@@ -122,12 +120,6 @@ class var_node : public base_var_node
     const std::string &name() const override { return name_; }
 
     TT type() const override { return TT(TT::type<R>(), flat_shape(shape_)); }
-
-    std::string str() const override
-    {
-        return scalar_type_name().template operator()<R>() +
-               ttl::to_string(shape_);
-    }
 
     void run(cpu_runtime &rt) const override {}  // noop
 

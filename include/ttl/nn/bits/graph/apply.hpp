@@ -20,7 +20,7 @@ template <typename Tuple, size_t... I>
 std::string signature(const Tuple &args, std::index_sequence<I...>)
 {
     std::array<std::string, sizeof...(I)> names(
-        {ttl::tensor_type_name(std::get<I>(args))...});
+        {ttl::type_of(std::get<I>(args)).name()...});
     std::string name;
     for (auto n : names) {
         if (!name.empty()) { name += ","; }

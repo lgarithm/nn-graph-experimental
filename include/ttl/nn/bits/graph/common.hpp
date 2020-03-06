@@ -4,6 +4,7 @@
 #include <string>
 
 #include <ttl/debug>
+#include <ttl/experimental/type>
 #include <ttl/tensor>
 
 #include <experimental/reflect>
@@ -11,38 +12,6 @@
 namespace ttl::nn::graph
 {
 using arity_t = uint8_t;
-
-struct type_size {
-    template <typename R>
-    auto operator()() const
-    {
-        return sizeof(R);
-    }
-};
-
-struct scalar_type_name {
-    template <typename R>
-    std::string prefix() const
-    {
-        static_assert(std::is_floating_point<R>::value ||
-                      std::is_integral<R>::value);
-
-        if (std::is_floating_point<R>::value) {
-            return "f";
-        } else if (std::is_integral<R>::value) {
-            return std::is_signed<R>::value ? "i" : "u";
-        } else {
-            // return "s";
-            return "";
-        }
-    }
-
-    template <typename R>
-    std::string operator()() const
-    {
-        return prefix<R>() + std::to_string(sizeof(R) * CHAR_BIT);
-    }
-};
 
 namespace internal
 {
@@ -57,7 +26,6 @@ T *down_cast(P *parent)
     }
     return p;
 }
-
 template <typename T, typename P>
 const T *down_cast(const P *parent)
 {
@@ -75,11 +43,14 @@ const T *down_cast(const P *parent)
 
 namespace ttl
 {
-template <typename T>
-std::string tensor_type_name(const T &t)
+namespace internal
 {
-    return nn::graph::scalar_type_name()
-               .template operator()<typename T::value_type>() +
-           ttl::to_string(t.shape());
+template <typename R, typename S, typename D, typename A>
+basic_tensor_type<R, S> type_of(const basic_tensor<R, S, D, A> &x)
+{
+    return basic_tensor_type<R, S>(x.dims());
 }
+}  // namespace internal
+
+using internal::type_of;
 }  // namespace ttl

@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
     const auto train = load_mnist_data(prefix, "train");
     const auto test = load_mnist_data(prefix, "t10k");
 
-    std::cerr << ttl::tensor_type_name(train.images) << std::endl;
-    std::cerr << ttl::tensor_type_name(train.labels) << std::endl;
-    std::cerr << ttl::tensor_type_name(test.images) << std::endl;
-    std::cerr << ttl::tensor_type_name(test.labels) << std::endl;
+    std::cerr << ttl::type_of(train.images).name() << std::endl;
+    std::cerr << ttl::type_of(train.labels).name() << std::endl;
+    std::cerr << ttl::type_of(test.images).name() << std::endl;
+    std::cerr << ttl::type_of(test.labels).name() << std::endl;
 
     const int N = 5000;
     const auto images = chunk(train.images, N);
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
         int idx = 0;
         for (const auto [images, labels] : zip(images, labels)) {
             std::cerr << ++idx << std::endl;
-            std::cerr << ttl::tensor_type_name(images) << std::endl;
-            std::cerr << ttl::tensor_type_name(labels) << std::endl;
+            std::cerr << ttl::type_of(images).name() << std::endl;
+            std::cerr << ttl::type_of(labels).name() << std::endl;
         }
     }
 
@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
         const auto r = range<0>(images);
         for (const auto [idx, images, labels] : zip(r, images, labels)) {
             std::cerr << idx << std::endl;
-            std::cerr << ttl::tensor_type_name(images) << std::endl;
-            std::cerr << ttl::tensor_type_name(labels) << std::endl;
+            std::cerr << ttl::type_of(images).name() << std::endl;
+            std::cerr << ttl::type_of(labels).name() << std::endl;
         }
     }
     return 0;
