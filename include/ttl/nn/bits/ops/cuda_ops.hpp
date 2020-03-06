@@ -1,6 +1,5 @@
 #pragma once
-#include <experimental/reflect>
-
+#include <ttl/nn/bits/graph/common.hpp>
 #include <ttl/nn/bits/graph/device.hpp>
 
 namespace ttl::nn
@@ -22,7 +21,7 @@ class not_implemented_for_cuda
     void operator()(const T &...) const
     {
         if (cnt_ == 0) {
-            std::cerr << demangled_type_info_name(typeid(F))
+            std::cerr << ttl::internal::demangled_type_info_name<F>()
                       << " not implemented for cuda!" << std::endl;
         }
         ++cnt_;

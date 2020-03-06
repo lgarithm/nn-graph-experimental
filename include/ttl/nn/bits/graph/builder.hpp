@@ -128,7 +128,7 @@ class base_builder
         constexpr rank_t r = decltype(shape)::rank;
         using Node = var_node<R, r>;
         Node *y = tmp_var<R>(name, shape);
-        const auto fn = demangled_type_info_name(typeid(op));
+        const auto fn = demangled_type_info_name<Op>();
         auto f = new forward_func_node<Op, Node, Nodes...>(fn, op, y, xs...);
         own(f);
         links_[y] = f;  // TODO: check unique

@@ -3,11 +3,10 @@
 #include <sstream>
 #include <string>
 
+#include <ttl/bits/std_reflect.hpp>
 #include <ttl/debug>
 #include <ttl/experimental/type>
 #include <ttl/tensor>
-
-#include <experimental/reflect>
 
 namespace ttl::nn::graph
 {
@@ -15,14 +14,16 @@ using arity_t = uint8_t;
 
 namespace internal
 {
+using ttl::internal::demangled_type_info_name;
+
 template <typename T, typename P>
 T *down_cast(P *parent)
 {
     T *p = dynamic_cast<T *>(parent);
     if (p == nullptr) {
         throw std::logic_error("invalid down_cast from " +
-                               demangled_type_info_name(typeid(P)) + " to " +
-                               demangled_type_info_name(typeid(T)));
+                               demangled_type_info_name<P>() + " to " +
+                               demangled_type_info_name<T>());
     }
     return p;
 }
@@ -32,8 +33,8 @@ const T *down_cast(const P *parent)
     const T *p = dynamic_cast<const T *>(parent);
     if (p == nullptr) {
         throw std::logic_error("invalid down_cast from " +
-                               demangled_type_info_name(typeid(P)) + " to " +
-                               demangled_type_info_name(typeid(T)));
+                               demangled_type_info_name<P>() + " to " +
+                               demangled_type_info_name<T>());
     }
     return p;
 }

@@ -73,7 +73,7 @@ struct create_grad_func_node<true, i, Gi, F, Xi, Node, Nodes...> {
                                  i, std::tuple<Nodes...>>::type>::value);
 
         if (gxi == nullptr) { throw std::logic_error("gx[i] is nullptr"); }
-        const auto gn = demangled_type_info_name(typeid(Gi));
+        const auto gn = demangled_type_info_name<Gi>();
         const Gi gi = create_op<Gi>(f);
         return new gard_func_node<i, Gi, Node, Nodes...>(gn, gi, gxi, gy, y,
                                                          xs);

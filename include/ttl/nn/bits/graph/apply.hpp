@@ -2,7 +2,6 @@
 #define NN_GRAPG_TRACE 1
 
 #include <experimental/iterator>
-#include <experimental/reflect>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -33,7 +32,7 @@ template <typename F, typename... Args>
 std::string apply_name(const F &f, const std::tuple<Args...> &args,
                        bool detail = false)
 {
-    const auto f_name = demangled_type_info_name(typeid(F));
+    const auto f_name = demangled_type_info_name<F>();
     if (detail) {
         static constexpr auto arity = sizeof...(Args);
         return f_name + "(" +
@@ -62,7 +61,7 @@ struct maybe_apply<D, false> {
     {
         static constexpr auto arity = sizeof...(Args);
         std::array<std::string, arity> names(
-            {demangled_type_info_name(typeid(Args))...});
+            {demangled_type_info_name<Args>()...});
 
         std::stringstream ss;
         ss << "(\n\t";
@@ -70,8 +69,8 @@ struct maybe_apply<D, false> {
                   std::experimental::make_ostream_joiner(ss, "\n\t"));
         ss << "\n)";
 
-        std::cerr << "can't apply " << demangled_type_info_name(typeid(F))
-                  << " to " << ss.str() << std::endl;
+        std::cerr << "can't apply " << demangled_type_info_name<F>() << " to "
+                  << ss.str() << std::endl;
     }
 };
 
