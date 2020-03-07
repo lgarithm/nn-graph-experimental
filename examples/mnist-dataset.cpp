@@ -1,33 +1,28 @@
-#include <experimental/zip>
 #include <iostream>
 
+#include <stdml/ds/mnist>
 #include <ttl/debug>
+#include <ttl/experimental/zip>
 #include <ttl/nn/bits/graph/common.hpp>
-#include <ttl/nn/experimental/datasets>
 #include <ttl/range>
 
 int main(int argc, char *argv[])
 {
     // TRACE_SCOPE(argv[0]);
 
-    using nn::experimental::datasets::load_mnist_data;
-    const std::string home(std::getenv("HOME"));
-    const std::string prefix = home + "/var/data/mnist";
-    const auto train = load_mnist_data(prefix, "train");
-    const auto test = load_mnist_data(prefix, "t10k");
+    const auto ds = stdml::datasets::mnist::load_all();
 
-    std::cerr << ttl::type_of(train.images).name() << std::endl;
-    std::cerr << ttl::type_of(train.labels).name() << std::endl;
-    std::cerr << ttl::type_of(test.images).name() << std::endl;
-    std::cerr << ttl::type_of(test.labels).name() << std::endl;
+    std::cerr << ttl::type_of(ds.train.images).name() << std::endl;
+    std::cerr << ttl::type_of(ds.train.labels).name() << std::endl;
+    std::cerr << ttl::type_of(ds.test.images).name() << std::endl;
+    std::cerr << ttl::type_of(ds.test.labels).name() << std::endl;
 
     const int N = 5000;
-    const auto images = chunk(train.images, N);
-    const auto labels = chunk(train.labels, N);
-    using std::experimental::zip;
+    const auto images = chunk(ds.train.images, N);
+    const auto labels = chunk(ds.train.labels, N);
     using ttl::chunk;
     using ttl::range;
-
+    using ttl::experimental::zip;
     {
         int idx = 0;
         for (const auto [images, labels] : zip(images, labels)) {
