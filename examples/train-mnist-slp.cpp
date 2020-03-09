@@ -37,37 +37,19 @@ auto create_slp_model(builder &b, int input_size, int batch_size, int logits)
     return std::make_tuple(images, labels, predictions, loss);
 }
 
-void slp_cpu(int batch_size, int epoches, bool do_test)
+template <typename D = ttl::host_memory>
+void train_slp(int batch_size, int epoches, bool do_test)
 {
     TRACE_SCOPE(__func__);
-    ttl::nn::graph::builder b;
+    using runtime = ttl::nn::graph::internal::basic_runtime<D>;
+    ttl::nn::graph::internal::builder<runtime> b;
     const auto [xs, y_s, predictions, loss] =
         create_slp_model<float>(b, 28 * 28, batch_size, 10);
     auto gvs = b.gradients(loss);
-    ttl::nn::graph::runtime rt;
+    runtime rt;
     b.build(rt);
     b.init(rt);
-    using mnist = stdml::datasets::mnist<>;
-    const auto ds = mnist::load_all();
-    stdml::experimental::prepro_slp prepro;
-    train_mnist(
-        epoches, batch_size, b, rt,                                      //
-        ttl::view(prepro(ds.train.images)), ttl::view(ds.train.labels),  //
-        ttl::view(prepro(ds.test.images)), ttl::view(ds.test.labels),    //
-        xs, y_s, gvs, predictions);
-}
-
-void slp_gpu(int batch_size, int epoches, bool do_test)
-{
-    TRACE_SCOPE(__func__);
-    ttl::nn::graph::gpu_builder b;
-    const auto [xs, y_s, predictions, loss] =
-        create_slp_model<float>(b, 28 * 28, batch_size, 10);
-    auto gvs = b.gradients(loss);
-    ttl::nn::graph::gpu_runtime rt;
-    b.build(rt);
-    b.init(rt);
-    using mnist = stdml::datasets::mnist<ttl::cuda_memory>;
+    using mnist = stdml::datasets::mnist<D>;
     const auto ds = mnist::load_all();
     stdml::experimental::prepro_slp prepro;
     train_mnist(
@@ -91,9 +73,9 @@ int main(int argc, char *argv[])
     const int epoches = 10;
     const bool do_test = true;
     if (argc > 1 && std::string(argv[1]) == "gpu") {
-        slp_gpu(batch_size, epoches, do_test);
+        train_slp<ttl::cuda_memory>(batch_size, epoches, do_test);
     } else {
-        slp_cpu(batch_size, epoches, do_test);
+        train_slp<ttl::host_memory>(batch_size, epoches, do_test);
     }
     return 0;
 }
