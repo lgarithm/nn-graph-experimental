@@ -70,7 +70,8 @@ void cnn_cpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
-    const auto ds = stdml::datasets::mnist::load_all();
+    using mnist = stdml::datasets::mnist<>;
+    const auto ds = mnist::load_all();
     train_mnist(
         epoches, batch_size, b, rt,                                       //
         ttl::view(prepro4(ds.train.images)), ttl::view(ds.train.labels),  //
@@ -96,7 +97,8 @@ void cnn_gpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
-    const auto ds = stdml::datasets::mnist::load_all();
+    using mnist = stdml::datasets::mnist<>;
+    const auto ds = mnist::load_all();
     auto images = make_cuda_tensor_from(ttl::view(prepro4(ds.train.images)));
     auto labels = make_cuda_tensor_from(ttl::view(ds.train.labels));
     auto test_images =

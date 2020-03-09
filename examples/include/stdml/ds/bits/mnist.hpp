@@ -3,6 +3,7 @@
 #include <stdml/filesystem>
 #include <string>
 
+#include <ttl/device>
 #include <ttl/nn/bits/ops/io.hpp>
 #include <ttl/tensor>
 
@@ -46,16 +47,17 @@ inline std::string data_dir(const std::string &name = "")
     return prefix;
 }
 
+template <typename D = ttl::host_memory>
 class mnist
 {
-    using data_set = basic_data_set<ttl::tensor<uint8_t, 3>,  //
-                                    ttl::tensor<uint8_t, 1>>;
+    using data_set = basic_data_set<ttl::tensor<uint8_t, 3, D>,  //
+                                    ttl::tensor<uint8_t, 1, D>>;
 
     using datasets = basic_data_sets<data_set, data_set>;
 
     template <typename R, ttl::rank_t r>
     static void read_tensor(const std::string &path,
-                            const ttl::tensor_ref<R, r> &x)
+                            const ttl::tensor_ref<R, r, D> &x)
     {
         namespace fs = std::filesystem;
         const std::string filename = fs::path(path).filename();
@@ -84,8 +86,8 @@ class mnist
                 throw std::invalid_argument("mnist name must be train or t10k");
             };
         }();
-        ttl::tensor<uint8_t, 3> images(ttl::batch(n, shape));
-        ttl::tensor<uint8_t, 1> labels(n);
+        ttl::tensor<uint8_t, 3, D> images(ttl::batch(n, shape));
+        ttl::tensor<uint8_t, 1, D> labels(n);
 
         const std::string prefix = data_dir + "/" + name;
         read_tensor(prefix + "-images-idx3-ubyte", ttl::ref(images));

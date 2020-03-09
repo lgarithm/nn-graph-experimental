@@ -1,0 +1,32 @@
+// -*- mode: c++ -*-
+#pragma once
+#include <ttl/nn/bits/kernels/cuda/elementary.hpp>
+#include <ttl/nn/bits/ops/elementary.hpp>
+
+namespace stdml::experimental
+{
+class prepro_slp
+{
+  public:
+    template <typename D>
+    ttl::tensor<float, 2, D>
+    operator()(const ttl::tensor<uint8_t, 3, D> &t) const
+    {
+        const auto [n, h, w] = t.dims();
+        ttl::tensor<float, 2, D> y(n, h * w);
+        ttl::nn::kernels::cast_to<D, float, uint8_t>()(
+            ttl::flatten(ttl::ref(y)), ttl::flatten(ttl::view(t)));
+        // FIXME: y /= 255;
+        return y;
+    }
+
+    ttl::tensor<float, 2> operator()(const ttl::tensor<uint8_t, 3> &t) const
+    {
+        const auto [n, h, w] = t.dims();
+        ttl::tensor<float, 2> y(n, h * w);
+        std::transform(t.data(), t.data_end(), y.data(),
+                       [](uint8_t p) -> float { return p / 255.0; });
+        return y;
+    }
+};
+}  // namespace stdml::experimental

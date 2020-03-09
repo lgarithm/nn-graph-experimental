@@ -9,16 +9,6 @@
 
 #include "utils.hpp"
 
-// images -> [batch, h * w]
-ttl::tensor<float, 2> prepro2(const ttl::tensor_view<uint8_t, 3> &t)
-{
-    const auto [n, h, w] = t.dims();
-    ttl::tensor<float, 2> y(n, h * w);
-    std::transform(t.data(), t.data_end(), y.data(),
-                   [](uint8_t p) -> float { return p / 255.0; });
-    return y;
-}
-
 // images -> [batch, h, w, 1]
 ttl::tensor<float, 4> prepro4(const ttl::tensor_view<uint8_t, 3> &t)
 {

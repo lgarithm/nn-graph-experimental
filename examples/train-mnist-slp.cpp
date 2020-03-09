@@ -1,4 +1,5 @@
 #include <stdml/ds/mnist>
+#include <stdml/prepro>
 #include <ttl/algorithm>
 #include <ttl/experimental/copy>
 #include <ttl/nn/computation_graph>
@@ -46,20 +47,14 @@ void slp_cpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::runtime rt;
     b.build(rt);
     b.init(rt);
-    const auto ds = stdml::datasets::mnist::load_all();
+    using mnist = stdml::datasets::mnist<>;
+    const auto ds = mnist::load_all();
+    stdml::experimental::prepro_slp prepro;
     train_mnist(
-        epoches, batch_size, b, rt,                                       //
-        ttl::view(prepro2(ds.train.images)), ttl::view(ds.train.labels),  //
-        ttl::view(prepro2(ds.test.images)), ttl::view(ds.test.labels),    //
+        epoches, batch_size, b, rt,                                      //
+        ttl::view(prepro(ds.train.images)), ttl::view(ds.train.labels),  //
+        ttl::view(prepro(ds.test.images)), ttl::view(ds.test.labels),    //
         xs, y_s, gvs, predictions);
-}
-
-template <typename T>
-auto make_cuda_tensor_from(const T &t)
-{
-    ttl::cuda_tensor<typename T::value_type, T::rank> c(t.shape());
-    ttl::copy(ref(c), t);
-    return c;
 }
 
 void slp_gpu(int batch_size, int epoches, bool do_test)
@@ -72,16 +67,14 @@ void slp_gpu(int batch_size, int epoches, bool do_test)
     ttl::nn::graph::gpu_runtime rt;
     b.build(rt);
     b.init(rt);
-    const auto ds = stdml::datasets::mnist::load_all();
-    auto images = make_cuda_tensor_from(ttl::view(prepro2(ds.train.images)));
-    auto labels = make_cuda_tensor_from(ttl::view(ds.train.labels));
-    auto test_images =
-        make_cuda_tensor_from(ttl::view(prepro2(ds.test.images)));
-    auto test_labels = make_cuda_tensor_from(ttl::view(ds.test.labels));
-    train_mnist(epoches, batch_size, b, rt,                      //
-                ttl::view(images), ttl::view(labels),            //
-                ttl::view(test_images), ttl::view(test_labels),  //
-                xs, y_s, gvs, predictions);
+    using mnist = stdml::datasets::mnist<ttl::cuda_memory>;
+    const auto ds = mnist::load_all();
+    stdml::experimental::prepro_slp prepro;
+    train_mnist(
+        epoches, batch_size, b, rt,                                      //
+        ttl::view(prepro(ds.train.images)), ttl::view(ds.train.labels),  //
+        ttl::view(prepro(ds.test.images)), ttl::view(ds.test.labels),    //
+        xs, y_s, gvs, predictions);
 }
 
 void show_args(int argc, char *argv[])
