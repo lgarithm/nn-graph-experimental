@@ -10,6 +10,7 @@ class basic_classification_model : public basic_supervised_model<Rx, r, N, 0, D>
 {
     using P = basic_supervised_model<Rx, r, N, 0, D>;
 
+  protected:
     const N n_categories;
 
     using P::b;
