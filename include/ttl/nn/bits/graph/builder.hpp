@@ -203,7 +203,7 @@ class base_builder
             q.pop();
             if (links_.count(y) > 0) {
                 const auto f = links_.at(y);
-                for (const auto [gxi, gi, xi] : f->all_gradients(gy)) {
+                for (const auto &[gxi, gi, xi] : f->all_gradients(gy)) {
                     q.push(std::make_pair(gxi, xi));
                     own(gi);
                     own(gxi);
